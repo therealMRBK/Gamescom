@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+enum Priority {
+  HOCH
+  MITTEL
+  NIEDRIG
+}
+
+enum Category {
+  AAA
+  SIMULATION
+  INDIE
+  SONSTIGE
+}
+
+enum ContactChannel {
+  GAMESCOM_BIZ
+  MEET_TO_MATCH
+  DIREKT_EMAIL
+  GAMES_PRESS
+  SONSTIGE
+}
+
+enum ContactStatus {
+  NICHT_KONTAKTIERT
+  ANGEFRAGT
+  NACHGEFASST
+  BESTAETIGT
+  ABGELEHNT
+}
+
+enum FocusArea {
+  VIDEO
+  ARTIKEL
+  SOCIAL
+}
+
+enum ContentFormat {
+  HANDS_ON
+  ARTIKEL
+  SOCIAL_LIVE
+  REVIEW
+}
+
+enum ContentStatus {
+  GEPLANT
+  AUFNAHME_GEMACHT
+  ENTWURF
+  VEROEFFENTLICHT
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(EDITOR)
+  focusArea    FocusArea?
+  color        String   @default("#6366f1")
+  createdAt    DateTime @default(now())
+
+  assignedEntries        PublisherEntry[]         @relation("AssignedEntries")
+  appointmentAssignments AppointmentAssignment[]
+  availabilities         Availability[]
+  statusChanges          StatusHistory[]          @relation("ChangedBy")
+}
+
+model PublisherEntry {
+  id                 String         @id @default(cuid())
+  publisher          String
+  games              String[]
+  hall               String?
+  priority           Priority       @default(MITTEL)
+  category           Category?
+  contactChannel     ContactChannel @default(SONSTIGE)
+  contactStatus      ContactStatus  @default(NICHT_KONTAKTIERT)
+  contactPersonName  String?
+  contactPersonEmail String?
+  notes              String?
+  assignedUserId     String?
+  assignedUser       User?          @relation("AssignedEntries", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  statusHistory StatusHistory[]
+  appointments  Appointment[]
+
+  @@index([contactStatus])
+  @@index([priority])
+}
+
+model StatusHistory {
+  id          String         @id @default(cuid())
+  entryId     String
+  entry       PublisherEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  oldStatus   ContactStatus?
+  newStatus   ContactStatus
+  changedAt   DateTime       @default(now())
+  changedById String?
+  changedBy   User?          @relation("ChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+}
+
+model Appointment {
+  id               String          @id @default(cuid())
+  title            String
+  publisherEntryId String?
+  publisherEntry   PublisherEntry? @relation(fields: [publisherEntryId], references: [id], onDelete: SetNull)
+  startTime        DateTime
+  endTime          DateTime
+  hall             String?
+  stand            String?
+  notes            String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  assignments  AppointmentAssignment[]
+  contentPiece ContentPiece?
+
+  @@index([startTime])
+}
+
+model AppointmentAssignment {
+  id            String      @id @default(cuid())
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([appointmentId, userId])
+}
+
+model ContentPiece {
+  id            String        @id @default(cuid())
+  appointmentId String        @unique
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  format        ContentFormat
+  status        ContentStatus @default(GEPLANT)
+  embargoAt     DateTime?
+  publishedAt   DateTime?
+  link          String?
+  notes         String?
+}
+
+model Availability {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day    DateTime
+  onSite Boolean  @default(true)
+  timeFrom String?
+  timeTo   String?
+
+  @@unique([userId, day])
+}

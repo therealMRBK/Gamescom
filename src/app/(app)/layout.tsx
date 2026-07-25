@@ -1,0 +1,72 @@
+import Link from "next/link";
+import { requireSession } from "@/lib/rbac";
+import { signOut } from "@/auth";
+
+const navItems = [
+  { href: "/dashboard", label: "Heute", icon: "🏠" },
+  { href: "/publishers", label: "Publisher", icon: "🏢" },
+  { href: "/calendar", label: "Kalender", icon: "📅" },
+  { href: "/team", label: "Team", icon: "👥" },
+  { href: "/content", label: "Content", icon: "🎬" },
+];
+
+export default async function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await requireSession();
+
+  return (
+    <div className="flex min-h-dvh flex-col">
+      <header className="no-print sticky top-0 z-20 flex items-center justify-between border-b border-slate-800 bg-slate-950/95 px-4 py-3 backdrop-blur">
+        <div>
+          <p className="text-[11px] font-semibold tracking-wide text-indigo-400">
+            gamescom 2026
+          </p>
+          <p className="text-sm text-slate-300">
+            {session.user.name}{" "}
+            <span className="text-slate-500">
+              · {session.user.role === "ADMIN" ? "Admin" : "Redakteur:in"}
+            </span>
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {session.user.role === "ADMIN" && (
+            <Link
+              href="/admin/users"
+              className="rounded-lg px-2.5 py-2 text-sm text-slate-400 hover:bg-slate-800"
+            >
+              ⚙️
+            </Link>
+          )}
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/login" });
+            }}
+          >
+            <button className="rounded-lg px-3 py-2 text-sm text-slate-400 hover:bg-slate-800">
+              Abmelden
+            </button>
+          </form>
+        </div>
+      </header>
+
+      <main className="no-print flex-1 px-4 pb-24 pt-4">{children}</main>
+
+      <nav className="no-print fixed bottom-0 left-0 right-0 z-20 grid grid-cols-5 border-t border-slate-800 bg-slate-950/95 backdrop-blur">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex flex-col items-center gap-0.5 py-2.5 text-[11px] text-slate-400 active:bg-slate-800"
+          >
+            <span className="text-lg leading-none">{item.icon}</span>
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+    </div>
+  );
+}
