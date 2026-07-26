@@ -33,7 +33,7 @@ export default async function LoginPage({
             gamescom 2026
           </p>
           <h1 className="mt-1 text-xl font-bold text-white">
-            Spieletester.de Command Center
+            Command Center
           </h1>
         </div>
 
@@ -55,7 +55,7 @@ export default async function LoginPage({
               required
               autoComplete="email"
               className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-white outline-none focus:border-indigo-500"
-              placeholder="team@spieletester.de"
+              placeholder="team@example.com"
             />
           </div>
           <div>

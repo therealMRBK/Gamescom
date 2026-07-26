@@ -99,7 +99,7 @@ const PUBLISHER_SEED: SeedEntry[] = [
 ];
 
 async function main() {
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@spieletester.de";
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
   const adminPassword = process.env.ADMIN_PASSWORD || "gamescom2026!";
   const adminName = process.env.ADMIN_NAME || "Admin";
 

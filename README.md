@@ -37,7 +37,7 @@ Die App ist danach unter **http://localhost:3333** erreichbar. Beim ersten Start
 
 **Admin-Login** (aus `.env`, Standardwerte in `.env.example`):
 
-- E-Mail: `admin@spieletester.de`
+- E-Mail: `admin@example.com`
 - Passwort: der Wert von `ADMIN_PASSWORD` in eurer `.env`
 
 Weitere Teammitglieder legt der Admin danach direkt in der App unter **⚙️ (oben rechts) → Teammitglieder verwalten** an.

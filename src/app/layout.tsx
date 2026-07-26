@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "gamescom 2026 Command Center",
-  description: "Interne Messe-Planung für Spieletester.de – gamescom 2026",
+  description: "Interne Messe-Planung für die gamescom 2026",
 };
 
 export const viewport: Viewport = {

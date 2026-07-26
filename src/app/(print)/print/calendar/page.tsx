@@ -58,7 +58,7 @@ export default async function PrintCalendarPage({
       </div>
 
       <h1 className="text-xl font-bold">Terminplan – {dayMeta.label}</h1>
-      <p className="mb-4 text-sm text-slate-600">{dayMeta.phase} · Spieletester.de · gamescom 2026</p>
+      <p className="mb-4 text-sm text-slate-600">{dayMeta.phase} · gamescom 2026</p>
 
       {appointments.length === 0 ? (
         <p className="text-sm text-slate-500">Keine Termine an diesem Tag.</p>
