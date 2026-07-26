@@ -28,7 +28,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_NAME: ${ADMIN_NAME:-Admin}
     ports:
-      - "3000:3000"
+      - "3333:3000"
     command: sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts && node server.js"
 
 volumes:
