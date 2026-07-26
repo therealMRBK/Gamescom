@@ -34,7 +34,7 @@ export function AvailabilityEditor({
         return (
           <div
             key={d.date}
-            className="flex flex-wrap items-center gap-2 rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800"
+            className="flex flex-wrap items-center gap-2 rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800"
           >
             <label className="flex flex-1 items-center gap-2 text-sm text-white">
               <input
@@ -58,7 +58,7 @@ export function AvailabilityEditor({
                 className="h-5 w-5 rounded"
               />
               {d.label}
-              <span className="text-xs text-slate-500">{d.phase}</span>
+              <span className="text-xs text-stone-500">{d.phase}</span>
             </label>
             <input
               id={`${userId}-${d.date}-from`}
@@ -81,7 +81,7 @@ export function AvailabilityEditor({
               }}
               className="input w-24 !px-2 !py-1.5 text-sm"
             />
-            <span className="text-slate-500">–</span>
+            <span className="text-stone-500">–</span>
             <input
               id={`${userId}-${d.date}-to`}
               type="time"

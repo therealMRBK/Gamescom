@@ -92,22 +92,22 @@ export default async function CalendarPage({
         <h1 className="text-lg font-bold text-white">Terminplan</h1>
         <Link
           href={`/print/calendar?day=${selectedDay}`}
-          className="rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-300"
+          className="rounded-lg bg-stone-800 px-3 py-2 text-sm text-stone-300"
         >
           🖨️ Drucken
         </Link>
       </div>
 
-      <div className="flex overflow-hidden rounded-xl ring-1 ring-slate-700">
+      <div className="flex overflow-hidden rounded-xl ring-1 ring-stone-700">
         <Link
           href={`/calendar?view=day&day=${selectedDay}`}
-          className={`flex-1 py-2 text-center text-sm ${view === "day" ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400"}`}
+          className={`flex-1 py-2 text-center text-sm ${view === "day" ? "bg-amber-700 text-white" : "bg-stone-900 text-stone-400"}`}
         >
           Tag
         </Link>
         <Link
           href="/calendar?view=week"
-          className={`flex-1 py-2 text-center text-sm ${view === "week" ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400"}`}
+          className={`flex-1 py-2 text-center text-sm ${view === "week" ? "bg-amber-700 text-white" : "bg-stone-900 text-stone-400"}`}
         >
           Woche
         </Link>
@@ -119,7 +119,7 @@ export default async function CalendarPage({
             <Link
               key={d.date}
               href={`/calendar?view=day&day=${d.date}`}
-              className={`shrink-0 rounded-lg px-3 py-1.5 text-xs ${d.date === selectedDay ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400"}`}
+              className={`shrink-0 rounded-lg px-3 py-1.5 text-xs ${d.date === selectedDay ? "bg-amber-700 text-white" : "bg-stone-900 text-stone-400"}`}
             >
               {d.label}
             </Link>

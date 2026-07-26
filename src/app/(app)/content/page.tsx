@@ -28,7 +28,7 @@ export default async function ContentPage() {
 
       {withoutContent.length > 0 && (
         <section>
-          <h2 className="mb-2 text-sm font-semibold text-slate-400">
+          <h2 className="mb-2 text-sm font-semibold text-stone-400">
             Noch nicht geplant ({withoutContent.length})
           </h2>
           <ul className="space-y-2">
@@ -36,10 +36,10 @@ export default async function ContentPage() {
               <li key={appt.id}>
                 <Link
                   href={`/calendar/${appt.id}/edit`}
-                  className="block rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800 active:bg-slate-800"
+                  className="block rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800 active:bg-stone-800"
                 >
                   <p className="text-sm font-semibold text-white">{appt.title}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-stone-400">
                     {formatWallDateLabel(appt.startTime)} · {formatWallTime(appt.startTime)} ·{" "}
                     {appt.publisherEntry?.publisher}
                   </p>
@@ -52,11 +52,11 @@ export default async function ContentPage() {
 
       {withContentByStatus.map(({ status, items }) => (
         <section key={status}>
-          <h2 className="mb-2 text-sm font-semibold text-slate-400">
+          <h2 className="mb-2 text-sm font-semibold text-stone-400">
             {CONTENT_STATUS_LABELS[status]} ({items.length})
           </h2>
           {items.length === 0 ? (
-            <p className="text-xs text-slate-600">–</p>
+            <p className="text-xs text-stone-600">–</p>
           ) : (
             <ul className="space-y-2">
               {items.map((appt) => {
@@ -69,14 +69,14 @@ export default async function ContentPage() {
                   <li key={appt.id}>
                     <Link
                       href={`/calendar/${appt.id}/edit`}
-                      className="block rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800 active:bg-slate-800"
+                      className="block rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800 active:bg-stone-800"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-white">
                             {appt.title}
                           </p>
-                          <p className="truncate text-xs text-slate-400">
+                          <p className="truncate text-xs text-stone-400">
                             {appt.publisherEntry?.publisher} ·{" "}
                             {CONTENT_FORMAT_LABELS[piece.format]}
                           </p>
@@ -88,7 +88,7 @@ export default async function ContentPage() {
                         </span>
                       </div>
                       {piece.embargoAt && (
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 text-xs text-stone-500">
                           Embargo: {new Date(piece.embargoAt).toLocaleString("de-DE")}
                         </p>
                       )}
@@ -98,7 +98,7 @@ export default async function ContentPage() {
                         </p>
                       )}
                       {piece.link && (
-                        <p className="mt-1 truncate text-xs text-indigo-400">{piece.link}</p>
+                        <p className="mt-1 truncate text-xs text-amber-500">{piece.link}</p>
                       )}
                     </Link>
                   </li>

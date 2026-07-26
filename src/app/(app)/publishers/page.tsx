@@ -64,7 +64,7 @@ export default async function PublishersPage({
         <h1 className="text-lg font-bold text-white">Publisher &amp; Outreach</h1>
         <Link
           href="/publishers/new"
-          className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white"
+          className="rounded-lg bg-amber-700 px-3 py-2 text-sm font-medium text-white"
         >
           + Neu
         </Link>
@@ -72,7 +72,7 @@ export default async function PublishersPage({
 
       <PublisherFilterBar />
 
-      <p className="text-xs text-slate-500">{sorted.length} Einträge</p>
+      <p className="text-xs text-stone-500">{sorted.length} Einträge</p>
 
       {view === "list" ? (
         <ul className="space-y-2">
@@ -80,17 +80,17 @@ export default async function PublishersPage({
             <li key={entry.id}>
               <Link
                 href={`/publishers/${entry.id}`}
-                className="block rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800 active:bg-slate-800"
+                className="block rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800 active:bg-stone-800"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">
                       {entry.publisher}
                     </p>
-                    <p className="truncate text-xs text-slate-400">
+                    <p className="truncate text-xs text-stone-400">
                       {entry.games.slice(0, 2).join(", ")}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       {entry.hall ? `Halle ${entry.hall} · ` : ""}
                       {entry.category ? CATEGORY_LABELS[entry.category] : ""}
                       {entry.assignedUser ? ` · ${entry.assignedUser.name}` : ""}
@@ -110,7 +110,7 @@ export default async function PublishersPage({
             </li>
           ))}
           {sorted.length === 0 && (
-            <p className="rounded-xl bg-slate-900 p-4 text-sm text-slate-500 ring-1 ring-slate-800">
+            <p className="rounded-xl bg-stone-900 p-4 text-sm text-stone-500 ring-1 ring-stone-800">
               Keine Einträge für diesen Filter.
             </p>
           )}
@@ -121,7 +121,7 @@ export default async function PublishersPage({
             const columnEntries = sorted.filter((e) => e.contactStatus === status);
             return (
               <div key={status} className="w-64 shrink-0">
-                <p className="mb-2 text-xs font-semibold text-slate-400">
+                <p className="mb-2 text-xs font-semibold text-stone-400">
                   {CONTACT_STATUS_LABELS[status]} ({columnEntries.length})
                 </p>
                 <div className="space-y-2">
@@ -129,7 +129,7 @@ export default async function PublishersPage({
                     <Link
                       key={entry.id}
                       href={`/publishers/${entry.id}`}
-                      className="block rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800 active:bg-slate-800"
+                      className="block rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800 active:bg-stone-800"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <p className="truncate text-sm font-semibold text-white">
@@ -141,7 +141,7 @@ export default async function PublishersPage({
                           {PRIORITY_LABELS[entry.priority]}
                         </span>
                       </div>
-                      <p className="truncate text-xs text-slate-500">
+                      <p className="truncate text-xs text-stone-500">
                         {entry.hall ? `Halle ${entry.hall}` : ""}
                         {entry.assignedUser ? ` · ${entry.assignedUser.name}` : ""}
                       </p>

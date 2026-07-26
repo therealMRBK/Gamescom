@@ -6,5 +6,5 @@ export default async function PrintLayout({
   children: React.ReactNode;
 }) {
   await requireSession();
-  return <div className="min-h-dvh bg-white text-slate-900">{children}</div>;
+  return <div className="min-h-dvh bg-white text-stone-900">{children}</div>;
 }

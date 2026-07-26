@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { berlinTodayKey, formatWallDateLabel, formatWallTime } from "@/lib/dates";
 import { EVENT_DAYS, PRIORITY_COLORS, PRIORITY_LABELS } from "@/lib/constants";
 import { DailyBriefing } from "@/components/DailyBriefing";
+import { StatDial } from "@/components/StatDial";
 
 export const dynamic = "force-dynamic";
 
@@ -50,34 +51,25 @@ export default async function DashboardPage() {
         <h1 className="text-lg font-bold text-white">
           {isEventDay ? "Heute" : "Nächster Messetag"} · {formatWallDateLabel(targetDayStart)}
         </h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-stone-400">
           {EVENT_DAYS.find((d) => d.date === targetDayKey)?.phase}
         </p>
       </div>
 
       <section className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800">
-          <p className="text-2xl font-bold text-blue-300">{openCount}</p>
-          <p className="text-xs text-slate-400">Offene Anfragen</p>
-        </div>
-        <div className="rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800">
-          <p className="text-2xl font-bold text-emerald-300">{confirmedCount}</p>
-          <p className="text-xs text-slate-400">Bestätigt</p>
-        </div>
-        <div className="rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800">
-          <p className="text-2xl font-bold text-red-300">{rejectedCount}</p>
-          <p className="text-xs text-slate-400">Abgelehnt</p>
-        </div>
+        <StatDial value={openCount} total={totalEntries} label="Offen" color="accent" />
+        <StatDial value={confirmedCount} total={totalEntries} label="Bestätigt" color="good" />
+        <StatDial value={rejectedCount} total={totalEntries} label="Abgelehnt" color="bad" />
       </section>
 
       <DailyBriefing />
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-slate-300">
+        <h2 className="mb-2 text-sm font-semibold text-stone-300">
           Termine {formatWallDateLabel(targetDayStart)}
         </h2>
         {todaysAppointments.length === 0 ? (
-          <p className="rounded-xl bg-slate-900 p-4 text-sm text-slate-500 ring-1 ring-slate-800">
+          <p className="rounded-xl bg-stone-900 p-4 text-sm text-stone-500 ring-1 ring-stone-800">
             Keine Termine an diesem Tag.
           </p>
         ) : (
@@ -85,14 +77,17 @@ export default async function DashboardPage() {
             {todaysAppointments.map((appt) => (
               <li
                 key={appt.id}
-                className="rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800"
+                className="rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold text-white">
-                      {formatWallTime(appt.startTime)}–{formatWallTime(appt.endTime)} · {appt.title}
+                      <span className="font-console tabular-nums text-amber-500">
+                        {formatWallTime(appt.startTime)}–{formatWallTime(appt.endTime)}
+                      </span>{" "}
+                      · {appt.title}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-stone-400">
                       {appt.publisherEntry?.publisher}
                       {appt.hall ? ` · Halle ${appt.hall}` : ""}
                       {appt.stand ? ` / Stand ${appt.stand}` : ""}
@@ -104,7 +99,7 @@ export default async function DashboardPage() {
                     {appt.assignments.map((a) => (
                       <span
                         key={a.id}
-                        className="rounded-full bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300"
+                        className="rounded-full bg-stone-800 px-2 py-0.5 text-[11px] text-stone-300"
                       >
                         {a.user.name}
                       </span>
@@ -119,15 +114,15 @@ export default async function DashboardPage() {
 
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-300">
+          <h2 className="text-sm font-semibold text-stone-300">
             Prioritäts-Publisher ohne Termin
           </h2>
-          <Link href="/publishers" className="text-xs text-indigo-400">
+          <Link href="/publishers" className="text-xs text-amber-500">
             Alle ansehen
           </Link>
         </div>
         {priorityWithoutAppointment.length === 0 ? (
-          <p className="rounded-xl bg-slate-900 p-4 text-sm text-slate-500 ring-1 ring-slate-800">
+          <p className="rounded-xl bg-stone-900 p-4 text-sm text-stone-500 ring-1 ring-stone-800">
             Alle High-Priority-Publisher haben einen Termin oder sind erledigt. 🎉
           </p>
         ) : (
@@ -136,13 +131,13 @@ export default async function DashboardPage() {
               <li key={entry.id}>
                 <Link
                   href={`/publishers/${entry.id}`}
-                  className="flex items-center justify-between rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800 active:bg-slate-800"
+                  className="flex items-center justify-between rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800 active:bg-stone-800"
                 >
                   <div>
                     <p className="text-sm font-semibold text-white">
                       {entry.publisher}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-stone-400">
                       {entry.games.slice(0, 2).join(", ")}
                     </p>
                   </div>

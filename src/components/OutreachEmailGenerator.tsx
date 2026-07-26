@@ -9,9 +9,9 @@ export function OutreachEmailGenerator({ publisherEntryId }: { publisherEntryId:
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <section className="rounded-xl bg-slate-900 p-4 ring-1 ring-slate-800">
+    <section className="rounded-xl bg-stone-900 p-4 ring-1 ring-stone-800">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-300">Outreach-E-Mail (KI)</h2>
+        <h2 className="text-sm font-semibold text-stone-300">Outreach-E-Mail (KI)</h2>
         <button
           type="button"
           disabled={isPending}
@@ -26,7 +26,7 @@ export function OutreachEmailGenerator({ publisherEntryId }: { publisherEntryId:
               }
             });
           }}
-          className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-indigo-300 disabled:opacity-50"
+          className="rounded-lg bg-stone-800 px-2 py-1 text-xs text-amber-400 disabled:opacity-50"
         >
           {isPending ? "Generiert…" : "✨ E-Mail-Entwurf generieren"}
         </button>
@@ -42,7 +42,7 @@ export function OutreachEmailGenerator({ publisherEntryId }: { publisherEntryId:
         />
       )}
       {!draft && !error && (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-stone-500">
           Erstellt einen Entwurf für eine Presseanfrage basierend auf Publisher, Spielen und
           Kontaktkanal.
         </p>

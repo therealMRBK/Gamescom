@@ -24,7 +24,7 @@ export function StatusSelect({
         const newStatus = e.target.value as ContactStatus;
         startTransition(() => updateContactStatus(entryId, newStatus));
       }}
-      className="rounded-lg border border-slate-700 bg-slate-800 px-2 py-1.5 text-xs text-slate-200 disabled:opacity-50"
+      className="rounded-lg border border-stone-700 bg-stone-800 px-2 py-1.5 text-xs text-stone-200 disabled:opacity-50"
     >
       {Object.entries(CONTACT_STATUS_LABELS).map(([value, label]) => (
         <option key={value} value={value}>

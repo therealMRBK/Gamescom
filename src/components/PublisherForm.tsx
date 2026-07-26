@@ -110,11 +110,11 @@ export function PublisherForm({
                 }
               });
             }}
-            className="rounded-lg bg-slate-800 px-2 py-1.5 text-xs text-indigo-300 disabled:opacity-50"
+            className="rounded-lg bg-stone-800 px-2 py-1.5 text-xs text-amber-400 disabled:opacity-50"
           >
             {isSuggesting ? "Analysiert…" : "✨ KI-Vorschlag für Priorität/Kategorie"}
           </button>
-          {aiReasoning && <p className="mt-1 text-xs text-slate-500">{aiReasoning}</p>}
+          {aiReasoning && <p className="mt-1 text-xs text-stone-500">{aiReasoning}</p>}
           {aiError && <p className="mt-1 text-xs text-red-400">{aiError}</p>}
         </div>
       )}
@@ -215,7 +215,7 @@ export function PublisherForm({
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-base font-semibold text-white active:scale-[0.98] disabled:opacity-60"
+        className="w-full rounded-xl bg-amber-700 px-4 py-3 text-base font-semibold text-white active:scale-[0.98] disabled:opacity-60"
       >
         {isPending ? "Speichert…" : entryId ? "Speichern" : "Anlegen"}
       </button>
@@ -232,7 +232,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm text-slate-300">{label}</span>
+      <span className="mb-1 block text-sm text-stone-300">{label}</span>
       {children}
     </label>
   );

@@ -60,7 +60,7 @@ export function ContentFieldsForm({
       }}
     >
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Format</span>
+        <span className="mb-1 block text-sm text-stone-300">Format</span>
         <select
           name="format"
           value={format}
@@ -76,7 +76,7 @@ export function ContentFieldsForm({
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Status</span>
+        <span className="mb-1 block text-sm text-stone-300">Status</span>
         <select name="status" defaultValue={initial?.status || "GEPLANT"} className="input">
           {Object.entries(CONTENT_STATUS_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -88,7 +88,7 @@ export function ContentFieldsForm({
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1 block text-sm text-slate-300">Embargo bis</span>
+          <span className="mb-1 block text-sm text-stone-300">Embargo bis</span>
           <input
             type="datetime-local"
             value={embargoAt}
@@ -97,7 +97,7 @@ export function ContentFieldsForm({
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm text-slate-300">Veröffentlicht am</span>
+          <span className="mb-1 block text-sm text-stone-300">Veröffentlicht am</span>
           <input
             type="datetime-local"
             value={publishedAt}
@@ -114,13 +114,13 @@ export function ContentFieldsForm({
       )}
 
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Link zum Content</span>
+        <span className="mb-1 block text-sm text-stone-300">Link zum Content</span>
         <input name="link" type="url" defaultValue={initial?.link || ""} className="input" />
       </label>
 
       <div>
         <div className="mb-1 flex items-center justify-between">
-          <span className="text-sm text-slate-300">Notizen / Entwurf</span>
+          <span className="text-sm text-stone-300">Notizen / Entwurf</span>
           <button
             type="button"
             disabled={isGenerating}
@@ -135,7 +135,7 @@ export function ContentFieldsForm({
                 }
               });
             }}
-            className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-indigo-300 disabled:opacity-50"
+            className="rounded-lg bg-stone-800 px-2 py-1 text-xs text-amber-400 disabled:opacity-50"
           >
             {isGenerating ? "Generiert…" : "✨ KI-Entwurf generieren"}
           </button>
@@ -153,7 +153,7 @@ export function ContentFieldsForm({
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-base font-semibold text-white active:scale-[0.98] disabled:opacity-60"
+        className="w-full rounded-xl bg-amber-700 px-4 py-3 text-base font-semibold text-white active:scale-[0.98] disabled:opacity-60"
       >
         {isPending ? "Speichert…" : "Content-Status speichern"}
       </button>

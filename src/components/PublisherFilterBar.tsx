@@ -69,16 +69,16 @@ export function PublisherFilterBar() {
           <option value="publisher">Sort: Publisher (A-Z)</option>
         </select>
       </div>
-      <div className="flex overflow-hidden rounded-xl ring-1 ring-slate-700">
+      <div className="flex overflow-hidden rounded-xl ring-1 ring-stone-700">
         <button
           onClick={() => setParam("view", "list")}
-          className={`flex-1 py-2 text-sm ${view === "list" ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400"}`}
+          className={`flex-1 py-2 text-sm ${view === "list" ? "bg-amber-700 text-white" : "bg-stone-900 text-stone-400"}`}
         >
           Liste
         </button>
         <button
           onClick={() => setParam("view", "kanban")}
-          className={`flex-1 py-2 text-sm ${view === "kanban" ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400"}`}
+          className={`flex-1 py-2 text-sm ${view === "kanban" ? "bg-amber-700 text-white" : "bg-stone-900 text-stone-400"}`}
         >
           Kanban
         </button>

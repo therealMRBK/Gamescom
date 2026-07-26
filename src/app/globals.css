@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0f;
-  --foreground: #f1f5f9;
+  --background: #1c1914;
+  --foreground: #efe7d8;
 }
 
 @theme inline {
@@ -23,6 +23,14 @@ body {
     sans-serif;
 }
 
+.font-console {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
 @media print {
   .no-print {
     display: none !important;
@@ -30,9 +38,9 @@ body {
 }
 
 .input {
-  @apply w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-white outline-none focus:border-indigo-500;
+  @apply w-full rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-base text-white outline-none focus:border-amber-600;
 }
 
 .btn-secondary {
-  @apply rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base font-medium text-slate-200 active:scale-[0.98];
+  @apply rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-base font-medium text-stone-200 active:scale-[0.98];
 }

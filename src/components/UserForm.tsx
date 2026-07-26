@@ -29,27 +29,27 @@ export function UserForm() {
       }}
     >
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Name</span>
+        <span className="mb-1 block text-sm text-stone-300">Name</span>
         <input name="name" required className="input" />
       </label>
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">E-Mail</span>
+        <span className="mb-1 block text-sm text-stone-300">E-Mail</span>
         <input name="email" type="email" required className="input" />
       </label>
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Passwort</span>
+        <span className="mb-1 block text-sm text-stone-300">Passwort</span>
         <input name="password" type="password" required minLength={8} className="input" />
       </label>
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1 block text-sm text-slate-300">Rolle</span>
+          <span className="mb-1 block text-sm text-stone-300">Rolle</span>
           <select name="role" defaultValue="EDITOR" className="input">
             <option value="EDITOR">Redakteur:in</option>
             <option value="ADMIN">Admin</option>
           </select>
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm text-slate-300">Schwerpunkt</span>
+          <span className="mb-1 block text-sm text-stone-300">Schwerpunkt</span>
           <select name="focusArea" defaultValue="" className="input">
             <option value="">–</option>
             {Object.entries(FOCUS_AREA_LABELS).map(([value, label]) => (
@@ -61,7 +61,7 @@ export function UserForm() {
         </label>
       </div>
       <div>
-        <span className="mb-1 block text-sm text-slate-300">Farbe (Kalender)</span>
+        <span className="mb-1 block text-sm text-stone-300">Farbe (Kalender)</span>
         <div className="flex gap-2">
           {COLORS.map((c) => (
             <label key={c}>
@@ -83,7 +83,7 @@ export function UserForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-base font-semibold text-white active:scale-[0.98] disabled:opacity-60"
+        className="w-full rounded-xl bg-amber-700 px-4 py-3 text-base font-semibold text-white active:scale-[0.98] disabled:opacity-60"
       >
         {isPending ? "Legt an…" : "Teammitglied anlegen"}
       </button>

@@ -20,13 +20,13 @@ export default async function AdminUsersPage() {
         {users.map((u) => (
           <div
             key={u.id}
-            className="flex items-center justify-between rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800"
+            className="flex items-center justify-between rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800"
           >
             <div>
               <p className="text-sm font-semibold text-white">
-                {u.name} <span className="text-slate-500">({u.email})</span>
+                {u.name} <span className="text-stone-500">({u.email})</span>
               </p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-stone-400">
                 {u.role === "ADMIN" ? "Admin" : "Redakteur:in"}
                 {u.focusArea ? ` · ${FOCUS_AREA_LABELS[u.focusArea]}` : ""}
               </p>
@@ -42,8 +42,8 @@ export default async function AdminUsersPage() {
         ))}
       </section>
 
-      <section className="rounded-xl bg-slate-900 p-4 ring-1 ring-slate-800">
-        <h2 className="mb-3 text-sm font-semibold text-slate-300">Neues Teammitglied</h2>
+      <section className="rounded-xl bg-stone-900 p-4 ring-1 ring-stone-800">
+        <h2 className="mb-3 text-sm font-semibold text-stone-300">Neues Teammitglied</h2>
         <UserForm />
       </section>
     </div>

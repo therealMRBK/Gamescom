@@ -37,7 +37,7 @@ export default async function PublisherDetailPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Link href="/publishers" className="text-sm text-slate-400">
+        <Link href="/publishers" className="text-sm text-stone-400">
           ← Zurück
         </Link>
         <DeleteButton
@@ -49,8 +49,8 @@ export default async function PublisherDetailPage({
 
       <h1 className="text-lg font-bold text-white">{entry.publisher}</h1>
 
-      <section className="rounded-xl bg-slate-900 p-4 ring-1 ring-slate-800">
-        <h2 className="mb-3 text-sm font-semibold text-slate-300">Bearbeiten</h2>
+      <section className="rounded-xl bg-stone-900 p-4 ring-1 ring-stone-800">
+        <h2 className="mb-3 text-sm font-semibold text-stone-300">Bearbeiten</h2>
         <PublisherForm
           key={entry.updatedAt.toISOString()}
           entryId={entry.id}
@@ -74,12 +74,12 @@ export default async function PublisherDetailPage({
 
       {entry.appointments.length > 0 && (
         <section>
-          <h2 className="mb-2 text-sm font-semibold text-slate-300">Termine</h2>
+          <h2 className="mb-2 text-sm font-semibold text-stone-300">Termine</h2>
           <ul className="space-y-2">
             {entry.appointments.map((appt) => (
               <li
                 key={appt.id}
-                className="rounded-xl bg-slate-900 p-3 text-sm ring-1 ring-slate-800"
+                className="rounded-xl bg-stone-900 p-3 text-sm ring-1 ring-stone-800"
               >
                 {formatWallDateLabel(appt.startTime)} · {formatWallTime(appt.startTime)}–
                 {formatWallTime(appt.endTime)} · {appt.title}
@@ -90,17 +90,17 @@ export default async function PublisherDetailPage({
       )}
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-slate-300">Änderungshistorie</h2>
+        <h2 className="mb-2 text-sm font-semibold text-stone-300">Änderungshistorie</h2>
         <ul className="space-y-2">
           {entry.statusHistory.map((h) => (
             <li
               key={h.id}
-              className="flex items-center justify-between rounded-xl bg-slate-900 p-3 text-xs ring-1 ring-slate-800"
+              className="flex items-center justify-between rounded-xl bg-stone-900 p-3 text-xs ring-1 ring-stone-800"
             >
               <span className={`rounded-full px-2 py-0.5 font-medium ${CONTACT_STATUS_COLORS[h.newStatus]}`}>
                 {CONTACT_STATUS_LABELS[h.newStatus]}
               </span>
-              <span className="text-slate-500">
+              <span className="text-stone-500">
                 {new Date(h.changedAt).toLocaleString("de-DE")}
                 {h.changedBy ? ` · ${h.changedBy.name}` : ""}
               </span>

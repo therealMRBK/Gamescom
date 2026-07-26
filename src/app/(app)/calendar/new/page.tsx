@@ -19,7 +19,7 @@ export default async function NewAppointmentPage({
 
   return (
     <div className="space-y-4">
-      <Link href="/calendar" className="text-sm text-slate-400">
+      <Link href="/calendar" className="text-sm text-stone-400">
         ← Zurück
       </Link>
       <h1 className="text-lg font-bold text-white">Neuer Termin</h1>

@@ -26,11 +26,11 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-950 px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-slate-900 p-6 shadow-xl ring-1 ring-slate-800">
+    <div className="flex min-h-dvh items-center justify-center bg-stone-950 px-4">
+      <div className="w-full max-w-sm rounded-2xl bg-stone-900 p-6 shadow-xl ring-1 ring-stone-800">
         <div className="mb-6 text-center">
-          <p className="text-sm font-medium tracking-wide text-indigo-400">
-            gamescom 2026
+          <p className="font-console text-sm font-medium tracking-wide text-amber-500">
+            GAMESCOM 2026
           </p>
           <h1 className="mt-1 text-xl font-bold text-white">
             Command Center
@@ -45,7 +45,7 @@ export default async function LoginPage({
 
         <form action={login} className="space-y-4">
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm text-slate-300">
+            <label htmlFor="email" className="mb-1 block text-sm text-stone-300">
               E-Mail
             </label>
             <input
@@ -54,12 +54,12 @@ export default async function LoginPage({
               type="email"
               required
               autoComplete="email"
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-white outline-none focus:border-indigo-500"
+              className="w-full rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-base text-white outline-none focus:border-amber-600"
               placeholder="team@example.com"
             />
           </div>
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm text-slate-300">
+            <label htmlFor="password" className="mb-1 block text-sm text-stone-300">
               Passwort
             </label>
             <input
@@ -68,13 +68,13 @@ export default async function LoginPage({
               type="password"
               required
               autoComplete="current-password"
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-white outline-none focus:border-indigo-500"
+              className="w-full rounded-xl border border-stone-700 bg-stone-800 px-4 py-3 text-base text-white outline-none focus:border-amber-600"
               placeholder="••••••••"
             />
           </div>
           <button
             type="submit"
-            className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-base font-semibold text-white transition active:scale-[0.98]"
+            className="w-full rounded-xl bg-amber-700 px-4 py-3 text-base font-semibold text-white transition active:scale-[0.98]"
           >
             Anmelden
           </button>

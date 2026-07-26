@@ -39,7 +39,7 @@ export default async function PrintCalendarPage({
   return (
     <div className="mx-auto max-w-2xl p-6">
       <div className="no-print mb-4 flex items-center justify-between">
-        <Link href="/calendar" className="text-sm text-slate-600">
+        <Link href="/calendar" className="text-sm text-stone-600">
           ← Zurück zum Kalender
         </Link>
         <PrintButton />
@@ -50,7 +50,7 @@ export default async function PrintCalendarPage({
           <Link
             key={d.date}
             href={`/print/calendar?day=${d.date}`}
-            className={`rounded-lg px-3 py-1.5 text-xs ${d.date === selectedDay ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-700"}`}
+            className={`rounded-lg px-3 py-1.5 text-xs ${d.date === selectedDay ? "bg-stone-900 text-white" : "bg-stone-200 text-stone-700"}`}
           >
             {d.label}
           </Link>
@@ -58,14 +58,14 @@ export default async function PrintCalendarPage({
       </div>
 
       <h1 className="text-xl font-bold">Terminplan – {dayMeta.label}</h1>
-      <p className="mb-4 text-sm text-slate-600">{dayMeta.phase} · gamescom 2026</p>
+      <p className="mb-4 text-sm text-stone-600">{dayMeta.phase} · gamescom 2026</p>
 
       {appointments.length === 0 ? (
-        <p className="text-sm text-slate-500">Keine Termine an diesem Tag.</p>
+        <p className="text-sm text-stone-500">Keine Termine an diesem Tag.</p>
       ) : (
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-slate-300 text-left">
+            <tr className="border-b border-stone-300 text-left">
               <th className="py-2 pr-2">Zeit</th>
               <th className="py-2 pr-2">Termin</th>
               <th className="py-2 pr-2">Ort</th>
@@ -74,7 +74,7 @@ export default async function PrintCalendarPage({
           </thead>
           <tbody>
             {appointments.map((appt) => (
-              <tr key={appt.id} className="border-b border-slate-200 align-top">
+              <tr key={appt.id} className="border-b border-stone-200 align-top">
                 <td className="py-2 pr-2 whitespace-nowrap font-medium">
                   {formatWallTime(appt.startTime)}–{formatWallTime(appt.endTime)}
                   {conflictIds.has(appt.id) && (
@@ -84,7 +84,7 @@ export default async function PrintCalendarPage({
                 <td className="py-2 pr-2">
                   <p className="font-medium">{appt.title}</p>
                   {appt.publisherEntry && (
-                    <p className="text-xs text-slate-500">{appt.publisherEntry.publisher}</p>
+                    <p className="text-xs text-stone-500">{appt.publisherEntry.publisher}</p>
                   )}
                 </td>
                 <td className="py-2 pr-2">

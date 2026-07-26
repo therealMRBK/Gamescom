@@ -55,7 +55,7 @@ export default async function TeamMemberPage({
 
   return (
     <div className="space-y-6">
-      <Link href="/team" className="text-sm text-slate-400">
+      <Link href="/team" className="text-sm text-stone-400">
         ← Zurück
       </Link>
 
@@ -68,7 +68,7 @@ export default async function TeamMemberPage({
         </span>
         <div>
           <h1 className="text-lg font-bold text-white">{member.name}</h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-stone-400">
             {member.role === "ADMIN" ? "Admin" : "Redakteur:in"}
             {member.focusArea ? ` · ${FOCUS_AREA_LABELS[member.focusArea]}` : ""}
           </p>
@@ -76,31 +76,31 @@ export default async function TeamMemberPage({
       </div>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-slate-300">
+        <h2 className="mb-2 text-sm font-semibold text-stone-300">
           Persönliche Tagesansicht – kommende Termine
         </h2>
         {byDay.size === 0 ? (
-          <p className="rounded-xl bg-slate-900 p-4 text-sm text-slate-500 ring-1 ring-slate-800">
+          <p className="rounded-xl bg-stone-900 p-4 text-sm text-stone-500 ring-1 ring-stone-800">
             Keine anstehenden Termine zugewiesen.
           </p>
         ) : (
           <div className="space-y-3">
             {[...byDay.entries()].map(([day, appts]) => (
               <div key={day}>
-                <p className="mb-1 text-xs font-semibold text-slate-500">
+                <p className="mb-1 text-xs font-semibold text-stone-500">
                   {formatWallDateLabel(appts[0].startTime)}
                 </p>
                 <ul className="space-y-2">
                   {appts.map((appt) => (
                     <li
                       key={appt.id}
-                      className="rounded-xl bg-slate-900 p-3 text-sm ring-1 ring-slate-800"
+                      className="rounded-xl bg-stone-900 p-3 text-sm ring-1 ring-stone-800"
                     >
                       <p className="font-semibold text-white">
                         {formatWallTime(appt.startTime)}–{formatWallTime(appt.endTime)} ·{" "}
                         {appt.title}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-stone-400">
                         {appt.publisherEntry?.publisher}
                         {appt.hall ? ` · Halle ${appt.hall}` : ""}
                       </p>
@@ -114,13 +114,13 @@ export default async function TeamMemberPage({
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-slate-300">
+        <h2 className="mb-2 text-sm font-semibold text-stone-300">
           Verfügbarkeit pro Messetag
         </h2>
         {canEditAvailability ? (
           <AvailabilityEditor userId={member.id} initial={availabilityMap} />
         ) : (
-          <p className="rounded-xl bg-slate-900 p-4 text-sm text-slate-500 ring-1 ring-slate-800">
+          <p className="rounded-xl bg-stone-900 p-4 text-sm text-stone-500 ring-1 ring-stone-800">
             Nur {member.name} oder Admin können die Verfügbarkeit bearbeiten.
           </p>
         )}

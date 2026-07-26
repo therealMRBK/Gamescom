@@ -74,12 +74,12 @@ export function AppointmentForm({
       }}
     >
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Titel</span>
+        <span className="mb-1 block text-sm text-stone-300">Titel</span>
         <input name="title" required defaultValue={initial?.title} className="input" />
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Verknüpfter Publisher</span>
+        <span className="mb-1 block text-sm text-stone-300">Verknüpfter Publisher</span>
         <select
           name="publisherEntryId"
           defaultValue={initial?.publisherEntryId || ""}
@@ -95,7 +95,7 @@ export function AppointmentForm({
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Messetag</span>
+        <span className="mb-1 block text-sm text-stone-300">Messetag</span>
         <select name="day" defaultValue={initialDay} className="input">
           {EVENT_DAYS.map((d) => (
             <option key={d.date} value={d.date}>
@@ -107,7 +107,7 @@ export function AppointmentForm({
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1 block text-sm text-slate-300">Start</span>
+          <span className="mb-1 block text-sm text-stone-300">Start</span>
           <input
             type="time"
             name="startTime"
@@ -117,7 +117,7 @@ export function AppointmentForm({
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm text-slate-300">Ende</span>
+          <span className="mb-1 block text-sm text-stone-300">Ende</span>
           <input
             type="time"
             name="endTime"
@@ -130,22 +130,22 @@ export function AppointmentForm({
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1 block text-sm text-slate-300">Halle</span>
+          <span className="mb-1 block text-sm text-stone-300">Halle</span>
           <input name="hall" defaultValue={initial?.hall || ""} className="input" />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm text-slate-300">Stand</span>
+          <span className="mb-1 block text-sm text-stone-300">Stand</span>
           <input name="stand" defaultValue={initial?.stand || ""} className="input" />
         </label>
       </div>
 
       <div>
-        <span className="mb-1 block text-sm text-slate-300">Zugewiesene Teammitglieder</span>
+        <span className="mb-1 block text-sm text-stone-300">Zugewiesene Teammitglieder</span>
         <div className="flex flex-wrap gap-2">
           {teamMembers.map((m) => (
             <label
               key={m.id}
-              className="flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-2 text-sm text-slate-200"
+              className="flex items-center gap-1.5 rounded-full bg-stone-800 px-3 py-2 text-sm text-stone-200"
             >
               <input
                 type="checkbox"
@@ -161,14 +161,14 @@ export function AppointmentForm({
       </div>
 
       <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Notizen</span>
+        <span className="mb-1 block text-sm text-stone-300">Notizen</span>
         <textarea name="notes" rows={3} defaultValue={initial?.notes || ""} className="input" />
       </label>
 
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-base font-semibold text-white active:scale-[0.98] disabled:opacity-60"
+        className="w-full rounded-xl bg-amber-700 px-4 py-3 text-base font-semibold text-white active:scale-[0.98] disabled:opacity-60"
       >
         {isPending ? "Speichert…" : appointmentId ? "Speichern" : "Termin anlegen"}
       </button>

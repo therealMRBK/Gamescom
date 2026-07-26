@@ -100,23 +100,23 @@ function DayColumn({
         <p className="text-sm font-semibold text-white">{day.label}</p>
         <Link
           href={`/calendar/new?day=${day.date}`}
-          className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-300"
+          className="rounded-lg bg-stone-800 px-2 py-1 text-xs text-stone-300"
         >
           + Termin
         </Link>
       </div>
       <div
         ref={setNodeRef}
-        className={`relative rounded-xl border ${isOver ? "border-indigo-500 bg-indigo-950/20" : "border-slate-800 bg-slate-900"}`}
+        className={`relative rounded-xl border ${isOver ? "border-amber-600 bg-amber-950/20" : "border-stone-800 bg-stone-900"}`}
         style={{ height: TOTAL_MINUTES * PX_PER_MINUTE }}
       >
         {hours.map((h) => (
           <div
             key={h}
-            className="absolute left-0 right-0 border-t border-slate-800/70 text-[10px] text-slate-600"
+            className="absolute left-0 right-0 border-t border-stone-800/70 text-[10px] text-stone-600"
             style={{ top: (h - BASE_HOUR) * 60 * PX_PER_MINUTE }}
           >
-            <span className="absolute -top-2 left-1 bg-slate-900 px-0.5">{h}:00</span>
+            <span className="font-console tabular-nums absolute -top-2 left-1 bg-stone-900 px-0.5">{h}:00</span>
           </div>
         ))}
 
@@ -193,7 +193,7 @@ function AppointmentBlock({
       ? "border-red-500"
       : appt.conflict === "buffer"
         ? "border-amber-500"
-        : "border-indigo-500";
+        : "border-amber-600";
 
   return (
     <div
@@ -201,22 +201,25 @@ function AppointmentBlock({
       style={style}
       {...listeners}
       {...attributes}
-      className={`absolute touch-none overflow-hidden rounded-lg border-l-4 ${borderColor} bg-slate-800 p-1.5 shadow-md active:cursor-grabbing`}
+      className={`absolute touch-none overflow-hidden rounded-lg border-l-4 ${borderColor} bg-stone-800 p-1.5 shadow-md active:cursor-grabbing`}
     >
       <div className="flex items-start justify-between gap-1">
         <p className="truncate text-[11px] font-semibold text-white">
-          {formatMinutes(appt.startMinutes)} {appt.title}
+          <span className="font-console tabular-nums text-amber-500">
+            {formatMinutes(appt.startMinutes)}
+          </span>{" "}
+          {appt.title}
         </p>
         <Link
           href={`/calendar/${appt.id}/edit`}
           onPointerDown={(e) => e.stopPropagation()}
-          className="shrink-0 text-[11px] text-slate-400"
+          className="shrink-0 text-[11px] text-stone-400"
         >
           ✏️
         </Link>
       </div>
       {height > 40 && (
-        <p className="truncate text-[10px] text-slate-400">
+        <p className="truncate text-[10px] text-stone-400">
           {appt.publisherName}
           {appt.hall ? ` · Halle ${appt.hall}` : ""}
         </p>

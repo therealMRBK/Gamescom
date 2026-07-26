@@ -30,7 +30,7 @@ export default async function EditAppointmentPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Link href="/calendar" className="text-sm text-slate-400">
+        <Link href="/calendar" className="text-sm text-stone-400">
           ← Zurück
         </Link>
         <DeleteButton
@@ -58,8 +58,8 @@ export default async function EditAppointmentPage({
         teamMembers={teamMembers}
       />
 
-      <section className="rounded-xl bg-slate-900 p-4 ring-1 ring-slate-800">
-        <h2 className="mb-3 text-sm font-semibold text-slate-300">Content-Pipeline</h2>
+      <section className="rounded-xl bg-stone-900 p-4 ring-1 ring-stone-800">
+        <h2 className="mb-3 text-sm font-semibold text-stone-300">Content-Pipeline</h2>
         <ContentFieldsForm
           key={(appointment.contentPiece?.updatedAt ?? appointment.updatedAt).toISOString()}
           appointmentId={appointment.id}

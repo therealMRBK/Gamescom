@@ -26,7 +26,7 @@ export default async function TeamPage() {
             <li key={member.id}>
               <Link
                 href={`/team/${member.id}`}
-                className="flex items-center justify-between rounded-xl bg-slate-900 p-3 ring-1 ring-slate-800 active:bg-slate-800"
+                className="flex items-center justify-between rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800 active:bg-stone-800"
               >
                 <div className="flex items-center gap-3">
                   <span
@@ -37,7 +37,7 @@ export default async function TeamPage() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-white">{member.name}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-stone-400">
                       {member.role === "ADMIN" ? "Admin" : "Redakteur:in"}
                       {member.focusArea ? ` · ${FOCUS_AREA_LABELS[member.focusArea]}` : ""}
                     </p>
@@ -47,7 +47,7 @@ export default async function TeamPage() {
                   className={`rounded-full px-2 py-1 text-[11px] font-medium ${
                     today?.onSite
                       ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30"
-                      : "bg-slate-500/15 text-slate-400 ring-1 ring-slate-500/30"
+                      : "bg-stone-500/15 text-stone-400 ring-1 ring-stone-500/30"
                   }`}
                 >
                   {today?.onSite ? "Heute vor Ort" : "Heute nicht vor Ort"}
