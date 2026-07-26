@@ -57,7 +57,7 @@ export function PublisherForm({
         startTransition(async () => {
           if (entryId) {
             await updatePublisherEntry(entryId, input);
-            router.push(`/publishers/${entryId}`);
+            router.refresh();
           } else {
             const created = await createPublisherEntry(input);
             router.push(`/publishers/${created.id}`);

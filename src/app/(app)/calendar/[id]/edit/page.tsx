@@ -61,6 +61,7 @@ export default async function EditAppointmentPage({
       <section className="rounded-xl bg-slate-900 p-4 ring-1 ring-slate-800">
         <h2 className="mb-3 text-sm font-semibold text-slate-300">Content-Pipeline</h2>
         <ContentFieldsForm
+          key={(appointment.contentPiece?.updatedAt ?? appointment.updatedAt).toISOString()}
           appointmentId={appointment.id}
           initial={
             appointment.contentPiece
