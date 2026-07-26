@@ -1,4 +1,4 @@
-# gamescom 2026 Command Center – Spieletester.de
+# gamescom 2026 Command Center
 
 Internes, passwortgeschütztes Mastertool für die Messe-Planung der gamescom 2026 (23.–30. August 2026, Köln). Mobile-first, für den Einsatz auf dem Smartphone in der Halle optimiert.
 
@@ -29,7 +29,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Die App ist danach unter **http://localhost:3000** erreichbar. Beim ersten Start:
+Die App ist danach unter **http://localhost:3333** erreichbar. Beim ersten Start:
 
 1. Postgres-Container startet und legt die Datenbank an (Daten liegen im Docker-Volume `gamescom_db_data` – bleiben bei Neustarts erhalten)
 2. Die Datenbank-Migrationen werden automatisch ausgeführt (`prisma migrate deploy`)
