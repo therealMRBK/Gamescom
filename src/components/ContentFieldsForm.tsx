@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { upsertContentPiece } from "@/lib/actions/content";
+import { generateContentDraftForAppointment } from "@/lib/actions/ai";
 import { CONTENT_FORMAT_LABELS, CONTENT_STATUS_LABELS } from "@/lib/constants";
 import { utcWallToDateTimeLocal, dateTimeLocalToUtcWall } from "@/lib/dates";
 import type { ContentFormat, ContentStatus } from "@prisma/client";
@@ -23,6 +24,10 @@ export function ContentFieldsForm({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isGenerating, startGenerating] = useTransition();
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [format, setFormat] = useState(initial?.format || "HANDS_ON");
+  const [notes, setNotes] = useState(initial?.notes || "");
   const [embargoAt, setEmbargoAt] = useState(
     initial?.embargoAt ? utcWallToDateTimeLocal(initial.embargoAt) : "",
   );
@@ -41,14 +46,14 @@ export function ContentFieldsForm({
       action={(formData: FormData) => {
         startTransition(async () => {
           await upsertContentPiece(appointmentId, {
-            format: formData.get("format") as ContentFormat,
+            format: format,
             status: formData.get("status") as ContentStatus,
             embargoAt: embargoAt ? dateTimeLocalToUtcWall(embargoAt).toISOString() : null,
             publishedAt: publishedAt
               ? dateTimeLocalToUtcWall(publishedAt).toISOString()
               : null,
             link: String(formData.get("link") || ""),
-            notes: String(formData.get("notes") || ""),
+            notes,
           });
           router.refresh();
         });
@@ -56,7 +61,12 @@ export function ContentFieldsForm({
     >
       <label className="block">
         <span className="mb-1 block text-sm text-slate-300">Format</span>
-        <select name="format" defaultValue={initial?.format || "HANDS_ON"} className="input">
+        <select
+          name="format"
+          value={format}
+          onChange={(e) => setFormat(e.target.value as ContentFormat)}
+          className="input"
+        >
           {Object.entries(CONTENT_FORMAT_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
               {label}
@@ -108,10 +118,37 @@ export function ContentFieldsForm({
         <input name="link" type="url" defaultValue={initial?.link || ""} className="input" />
       </label>
 
-      <label className="block">
-        <span className="mb-1 block text-sm text-slate-300">Notizen</span>
-        <textarea name="notes" rows={2} defaultValue={initial?.notes || ""} className="input" />
-      </label>
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-sm text-slate-300">Notizen / Entwurf</span>
+          <button
+            type="button"
+            disabled={isGenerating}
+            onClick={() => {
+              setAiError(null);
+              startGenerating(async () => {
+                try {
+                  const draft = await generateContentDraftForAppointment(appointmentId);
+                  setNotes(draft);
+                } catch (e) {
+                  setAiError(e instanceof Error ? e.message : "Fehler bei der KI-Generierung.");
+                }
+              });
+            }}
+            className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-indigo-300 disabled:opacity-50"
+          >
+            {isGenerating ? "Generiert…" : "✨ KI-Entwurf generieren"}
+          </button>
+        </div>
+        <textarea
+          name="notes"
+          rows={5}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="input"
+        />
+        {aiError && <p className="mt-1 text-xs text-red-400">{aiError}</p>}
+      </div>
 
       <button
         type="submit"

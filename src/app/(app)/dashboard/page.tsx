@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { berlinTodayKey, formatWallDateLabel, formatWallTime } from "@/lib/dates";
 import { EVENT_DAYS, PRIORITY_COLORS, PRIORITY_LABELS } from "@/lib/constants";
+import { DailyBriefing } from "@/components/DailyBriefing";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,8 @@ export default async function DashboardPage() {
           <p className="text-xs text-slate-400">Abgelehnt</p>
         </div>
       </section>
+
+      <DailyBriefing />
 
       <section>
         <h2 className="mb-2 text-sm font-semibold text-slate-300">

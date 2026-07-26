@@ -9,6 +9,7 @@ Internes, passwortgeschütztes Mastertool für die Messe-Planung der gamescom 20
 - **Team-Management** – Verfügbarkeit pro Messetag, Zuweisung von Terminen, persönliche Tagesansicht je Teammitglied
 - **Content-Pipeline** – Format & Status pro Termin, Embargo-Feld mit Warnung bei zu früher Veröffentlichung
 - **Dashboard** – Heute-Widget, Prioritäts-Publisher ohne Termin, Kennzahlen
+- **KI-Funktionen** (optional, benötigt `ANTHROPIC_API_KEY`) – Content-Entwürfe pro Termin, Outreach-E-Mail-Entwürfe, tägliches KI-Briefing auf dem Dashboard, Prioritäts-/Kategorie-Vorschlag beim Anlegen neuer Publisher-Einträge
 
 ## Tech-Stack
 
@@ -54,6 +55,7 @@ Zum Beenden: `docker compose down` (Daten bleiben erhalten). Zum vollständigen 
 | `ADMIN_EMAIL`    | E-Mail des initialen Admin-Accounts (Seed)                            |
 | `ADMIN_PASSWORD` | Passwort des initialen Admin-Accounts (Seed) – unbedingt ändern!      |
 | `ADMIN_NAME`     | Anzeigename des initialen Admin-Accounts                              |
+| `ANTHROPIC_API_KEY` | Optional – aktiviert die KI-Funktionen (Content-Entwürfe, E-Mail-Entwürfe, Briefing, Prioritäts-Vorschlag). Ohne Key funktioniert die App normal, die KI-Buttons zeigen einen Fehlerhinweis. |
 
 ## Lokale Entwicklung ohne Docker
 

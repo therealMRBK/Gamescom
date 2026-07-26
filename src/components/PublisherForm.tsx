@@ -7,11 +7,13 @@ import {
   updatePublisherEntry,
   type PublisherEntryInput,
 } from "@/lib/actions/publishers";
+import { suggestPriorityForNewPublisher } from "@/lib/actions/ai";
 import {
   CATEGORY_LABELS,
   CONTACT_CHANNEL_LABELS,
   PRIORITY_LABELS,
 } from "@/lib/constants";
+import type { Category, Priority } from "@prisma/client";
 
 type TeamMember = { id: string; name: string };
 
@@ -26,25 +28,29 @@ export function PublisherForm({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isSuggesting, startSuggesting] = useTransition();
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiReasoning, setAiReasoning] = useState<string | null>(null);
+  const [publisher, setPublisher] = useState(initial?.publisher || "");
   const [gamesText, setGamesText] = useState(
     (initial?.games || []).join(", "),
   );
+  const [priority, setPriority] = useState<Priority>(initial?.priority || "MITTEL");
+  const [category, setCategory] = useState<Category | "">(initial?.category || "");
 
   return (
     <form
       className="space-y-4"
       action={(formData: FormData) => {
         const input: PublisherEntryInput = {
-          publisher: String(formData.get("publisher") || ""),
+          publisher,
           games: gamesText
             .split(",")
             .map((g) => g.trim())
             .filter(Boolean),
           hall: String(formData.get("hall") || ""),
-          priority: formData.get("priority") as PublisherEntryInput["priority"],
-          category:
-            (formData.get("category") as PublisherEntryInput["category"]) ||
-            null,
+          priority,
+          category: category || null,
           contactChannel: formData.get(
             "contactChannel",
           ) as PublisherEntryInput["contactChannel"],
@@ -69,7 +75,8 @@ export function PublisherForm({
         <input
           name="publisher"
           required
-          defaultValue={initial?.publisher}
+          value={publisher}
+          onChange={(e) => setPublisher(e.target.value)}
           className="input"
         />
       </Field>
@@ -84,6 +91,34 @@ export function PublisherForm({
         />
       </Field>
 
+      {!entryId && (
+        <div>
+          <button
+            type="button"
+            disabled={isSuggesting || !publisher.trim()}
+            onClick={() => {
+              setAiError(null);
+              setAiReasoning(null);
+              startSuggesting(async () => {
+                try {
+                  const suggestion = await suggestPriorityForNewPublisher(publisher, gamesText);
+                  setPriority(suggestion.priority);
+                  setCategory(suggestion.category);
+                  setAiReasoning(suggestion.reasoning);
+                } catch (e) {
+                  setAiError(e instanceof Error ? e.message : "Fehler bei der KI-Generierung.");
+                }
+              });
+            }}
+            className="rounded-lg bg-slate-800 px-2 py-1.5 text-xs text-indigo-300 disabled:opacity-50"
+          >
+            {isSuggesting ? "Analysiert…" : "✨ KI-Vorschlag für Priorität/Kategorie"}
+          </button>
+          {aiReasoning && <p className="mt-1 text-xs text-slate-500">{aiReasoning}</p>}
+          {aiError && <p className="mt-1 text-xs text-red-400">{aiError}</p>}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <Field label="Halle/Stand">
           <input name="hall" defaultValue={initial?.hall} className="input" />
@@ -91,7 +126,8 @@ export function PublisherForm({
         <Field label="Priorität">
           <select
             name="priority"
-            defaultValue={initial?.priority || "MITTEL"}
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as Priority)}
             className="input"
           >
             {Object.entries(PRIORITY_LABELS).map(([value, label]) => (
@@ -107,7 +143,8 @@ export function PublisherForm({
         <Field label="Kategorie">
           <select
             name="category"
-            defaultValue={initial?.category || ""}
+            value={category}
+            onChange={(e) => setCategory(e.target.value as Category | "")}
             className="input"
           >
             <option value="">–</option>

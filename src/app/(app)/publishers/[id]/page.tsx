@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PublisherForm } from "@/components/PublisherForm";
 import { DeleteButton } from "@/components/DeleteButton";
+import { OutreachEmailGenerator } from "@/components/OutreachEmailGenerator";
 import { deletePublisherEntry } from "@/lib/actions/publishers";
 import {
   CONTACT_STATUS_LABELS,
@@ -68,6 +69,8 @@ export default async function PublisherDetailPage({
           teamMembers={teamMembers}
         />
       </section>
+
+      <OutreachEmailGenerator publisherEntryId={entry.id} />
 
       {entry.appointments.length > 0 && (
         <section>
