@@ -16,12 +16,18 @@ function getClient(): Anthropic {
 
 async function ask(system: string, userPrompt: string, maxTokens = 1024): Promise<string> {
   const anthropic = getClient();
-  const response = await anthropic.messages.create({
-    model: "claude-opus-5",
-    max_tokens: maxTokens,
-    system,
-    messages: [{ role: "user", content: userPrompt }],
-  });
+
+  let response;
+  try {
+    response = await anthropic.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: maxTokens,
+      system,
+      messages: [{ role: "user", content: userPrompt }],
+    });
+  } catch (error) {
+    throw new Error(describeAnthropicError(error));
+  }
 
   if (response.stop_reason === "refusal") {
     throw new Error("Die KI hat die Anfrage abgelehnt.");
@@ -32,6 +38,31 @@ async function ask(system: string, userPrompt: string, maxTokens = 1024): Promis
     throw new Error("Die KI hat keinen Text zurückgegeben.");
   }
   return textBlock.text.trim();
+}
+
+function describeAnthropicError(error: unknown): string {
+  if (error instanceof Anthropic.AuthenticationError) {
+    return "ANTHROPIC_API_KEY ist ungültig. Bitte in der .env prüfen.";
+  }
+  if (error instanceof Anthropic.PermissionDeniedError) {
+    return "Der API-Key hat keinen Zugriff auf dieses Modell.";
+  }
+  if (error instanceof Anthropic.RateLimitError) {
+    return "Zu viele Anfragen an die KI gerade – bitte kurz warten und erneut versuchen.";
+  }
+  if (error instanceof Anthropic.BadRequestError) {
+    if (error.message.toLowerCase().includes("credit balance")) {
+      return "Das Anthropic-Guthaben ist aufgebraucht. Bitte unter console.anthropic.com → Plans & Billing aufladen.";
+    }
+    return `Ungültige Anfrage an die KI: ${error.message}`;
+  }
+  if (error instanceof Anthropic.APIConnectionError) {
+    return "Die KI-API ist gerade nicht erreichbar (Netzwerkproblem). Bitte später erneut versuchen.";
+  }
+  if (error instanceof Anthropic.APIError) {
+    return `KI-Anfrage fehlgeschlagen (${error.status}): ${error.message}`;
+  }
+  return error instanceof Error ? error.message : "Unbekannter Fehler bei der KI-Anfrage.";
 }
 
 const CONTENT_FORMAT_HINTS: Record<string, string> = {
