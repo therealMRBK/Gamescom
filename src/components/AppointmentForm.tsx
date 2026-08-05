@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   createAppointment,
@@ -43,13 +43,14 @@ export function AppointmentForm({
     : "10:00";
   const initialEnd = initial ? initial.endTime.toISOString().slice(11, 16) : "10:30";
 
+  const [day, setDay] = useState(initialDay);
+  const [startTime, setStartTime] = useState(initialStart);
+  const [endTime, setEndTime] = useState(initialEnd);
+
   return (
     <form
       className="space-y-4"
       action={(formData: FormData) => {
-        const day = String(formData.get("day"));
-        const startTime = String(formData.get("startTime"));
-        const endTime = String(formData.get("endTime"));
         const assignedUserIds = formData.getAll("assignedUserIds").map(String);
 
         const input = {
@@ -69,7 +70,7 @@ export function AppointmentForm({
           } else {
             await createAppointment(input);
           }
-          router.push("/calendar");
+          router.push(`/calendar?view=day&day=${day}`);
         });
       }}
     >
@@ -96,7 +97,12 @@ export function AppointmentForm({
 
       <label className="block">
         <span className="mb-1 block text-sm text-stone-300">Messetag</span>
-        <select name="day" defaultValue={initialDay} className="input">
+        <select
+          name="day"
+          value={day}
+          onChange={(e) => setDay(e.target.value)}
+          className="input"
+        >
           {EVENT_DAYS.map((d) => (
             <option key={d.date} value={d.date}>
               {d.label} · {d.phase}
@@ -112,7 +118,11 @@ export function AppointmentForm({
             type="time"
             name="startTime"
             required
-            defaultValue={initialStart}
+            value={startTime}
+            onChange={(e) => {
+              setStartTime(e.target.value);
+              setEndTime(addMinutes(e.target.value, 30));
+            }}
             className="input"
           />
         </label>
@@ -122,7 +132,8 @@ export function AppointmentForm({
             type="time"
             name="endTime"
             required
-            defaultValue={initialEnd}
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
             className="input"
           />
         </label>
@@ -174,4 +185,13 @@ export function AppointmentForm({
       </button>
     </form>
   );
+}
+
+function addMinutes(time: string, minutesToAdd: number): string {
+  const [hh, mm] = time.split(":").map(Number);
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return time;
+  const total = (hh * 60 + mm + minutesToAdd + 24 * 60) % (24 * 60);
+  const newHh = Math.floor(total / 60);
+  const newMm = total % 60;
+  return `${String(newHh).padStart(2, "0")}:${String(newMm).padStart(2, "0")}`;
 }
