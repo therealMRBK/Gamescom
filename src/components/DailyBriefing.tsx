@@ -18,11 +18,11 @@ export function DailyBriefing() {
           onClick={() => {
             setError(null);
             startTransition(async () => {
-              try {
-                const text = await generateDashboardBriefing();
-                setBriefing(text);
-              } catch (e) {
-                setError(e instanceof Error ? e.message : "Fehler bei der KI-Generierung.");
+              const result = await generateDashboardBriefing();
+              if (result.ok) {
+                setBriefing(result.value);
+              } else {
+                setError(result.error);
               }
             });
           }}

@@ -127,11 +127,11 @@ export function ContentFieldsForm({
             onClick={() => {
               setAiError(null);
               startGenerating(async () => {
-                try {
-                  const draft = await generateContentDraftForAppointment(appointmentId);
-                  setNotes(draft);
-                } catch (e) {
-                  setAiError(e instanceof Error ? e.message : "Fehler bei der KI-Generierung.");
+                const result = await generateContentDraftForAppointment(appointmentId);
+                if (result.ok) {
+                  setNotes(result.value);
+                } else {
+                  setAiError(result.error);
                 }
               });
             }}

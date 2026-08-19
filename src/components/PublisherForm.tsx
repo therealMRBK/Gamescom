@@ -100,13 +100,13 @@ export function PublisherForm({
               setAiError(null);
               setAiReasoning(null);
               startSuggesting(async () => {
-                try {
-                  const suggestion = await suggestPriorityForNewPublisher(publisher, gamesText);
-                  setPriority(suggestion.priority);
-                  setCategory(suggestion.category);
-                  setAiReasoning(suggestion.reasoning);
-                } catch (e) {
-                  setAiError(e instanceof Error ? e.message : "Fehler bei der KI-Generierung.");
+                const result = await suggestPriorityForNewPublisher(publisher, gamesText);
+                if (result.ok) {
+                  setPriority(result.value.priority);
+                  setCategory(result.value.category);
+                  setAiReasoning(result.value.reasoning);
+                } else {
+                  setAiError(result.error);
                 }
               });
             }}

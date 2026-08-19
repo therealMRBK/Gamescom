@@ -6,9 +6,14 @@ import { EVENT_DAYS } from "@/lib/constants";
 export default async function NewAppointmentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ day?: string }>;
+  searchParams: Promise<{
+    day?: string;
+    title?: string;
+    publisherEntryId?: string;
+    time?: string;
+  }>;
 }) {
-  const { day } = await searchParams;
+  const { day, title, publisherEntryId, time } = await searchParams;
   const backDay = day || EVENT_DAYS[0].date;
 
   const [publishers, teamMembers] = await Promise.all([
@@ -29,6 +34,9 @@ export default async function NewAppointmentPage({
         publishers={publishers}
         teamMembers={teamMembers}
         defaultDay={day}
+        defaultTitle={title}
+        defaultPublisherEntryId={publisherEntryId}
+        defaultStartTime={time}
       />
     </div>
   );

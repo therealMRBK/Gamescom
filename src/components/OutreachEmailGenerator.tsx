@@ -18,11 +18,11 @@ export function OutreachEmailGenerator({ publisherEntryId }: { publisherEntryId:
           onClick={() => {
             setError(null);
             startTransition(async () => {
-              try {
-                const text = await generateOutreachEmailForPublisher(publisherEntryId);
-                setDraft(text);
-              } catch (e) {
-                setError(e instanceof Error ? e.message : "Fehler bei der KI-Generierung.");
+              const result = await generateOutreachEmailForPublisher(publisherEntryId);
+              if (result.ok) {
+                setDraft(result.value);
+              } else {
+                setError(result.error);
               }
             });
           }}

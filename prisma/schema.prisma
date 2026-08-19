@@ -75,6 +75,7 @@ model User {
   appointmentAssignments AppointmentAssignment[]
   availabilities         Availability[]
   statusChanges          StatusHistory[]          @relation("ChangedBy")
+  imapAccount            ImapAccount?
 }
 
 model PublisherEntry {
@@ -153,6 +154,19 @@ model ContentPiece {
   notes         String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+}
+
+model ImapAccount {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  host              String
+  port              Int      @default(993)
+  secure            Boolean  @default(true)
+  username          String
+  encryptedPassword String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Availability {

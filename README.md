@@ -10,6 +10,7 @@ Internes, passwortgeschütztes Mastertool für die Messe-Planung der gamescom 20
 - **Content-Pipeline** – Format & Status pro Termin, Embargo-Feld mit Warnung bei zu früher Veröffentlichung
 - **Dashboard** – Heute-Widget, Prioritäts-Publisher ohne Termin, Kennzahlen
 - **KI-Funktionen** (optional, benötigt `ANTHROPIC_API_KEY`) – Content-Entwürfe pro Termin, Outreach-E-Mail-Entwürfe, tägliches KI-Briefing auf dem Dashboard, Prioritäts-/Kategorie-Vorschlag beim Anlegen neuer Publisher-Einträge
+- **Postfach-Scan** (optional, benötigt `ANTHROPIC_API_KEY` + `IMAP_ENCRYPTION_KEY`) – jede:r Nutzer:in kann in den persönlichen Einstellungen (📬) ein eigenes IMAP-Postfach verbinden; auf Knopfdruck durchsucht die App die letzten 30 Tage nach gamescom-Einladungen und schlägt Termin sowie Antwort-E-Mail vor. Kein Hintergrund-Sync, nichts wird automatisch angelegt oder verschickt.
 
 ## Tech-Stack
 
@@ -55,7 +56,8 @@ Zum Beenden: `docker compose down` (Daten bleiben erhalten). Zum vollständigen 
 | `ADMIN_EMAIL`    | E-Mail des initialen Admin-Accounts (Seed)                            |
 | `ADMIN_PASSWORD` | Passwort des initialen Admin-Accounts (Seed) – unbedingt ändern!      |
 | `ADMIN_NAME`     | Anzeigename des initialen Admin-Accounts                              |
-| `ANTHROPIC_API_KEY` | Optional – aktiviert die KI-Funktionen (Content-Entwürfe, E-Mail-Entwürfe, Briefing, Prioritäts-Vorschlag). Ohne Key funktioniert die App normal, die KI-Buttons zeigen einen Fehlerhinweis. |
+| `ANTHROPIC_API_KEY` | Optional – aktiviert die KI-Funktionen (Content-Entwürfe, E-Mail-Entwürfe, Briefing, Prioritäts-Vorschlag, Postfach-Scan). Ohne Key funktioniert die App normal, die KI-Buttons zeigen einen Fehlerhinweis. |
+| `IMAP_ENCRYPTION_KEY` | Optional – erforderlich, um in den persönlichen Einstellungen ein IMAP-Postfach zu verbinden (verschlüsselt das gespeicherte Passwort). 32 Byte, base64 – erzeugen mit `openssl rand -base64 32`. |
 
 ## Lokale Entwicklung ohne Docker
 

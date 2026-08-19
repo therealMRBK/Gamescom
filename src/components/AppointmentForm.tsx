@@ -18,6 +18,9 @@ export function AppointmentForm({
   publishers,
   teamMembers,
   defaultDay,
+  defaultTitle,
+  defaultPublisherEntryId,
+  defaultStartTime,
 }: {
   appointmentId?: string;
   initial?: {
@@ -33,6 +36,9 @@ export function AppointmentForm({
   publishers: PublisherOption[];
   teamMembers: TeamMember[];
   defaultDay?: string;
+  defaultTitle?: string;
+  defaultPublisherEntryId?: string;
+  defaultStartTime?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -40,8 +46,10 @@ export function AppointmentForm({
   const initialDay = initial ? wallDateKey(initial.startTime) : defaultDay || EVENT_DAYS[0].date;
   const initialStart = initial
     ? initial.startTime.toISOString().slice(11, 16)
-    : "10:00";
-  const initialEnd = initial ? initial.endTime.toISOString().slice(11, 16) : "10:30";
+    : defaultStartTime || "10:00";
+  const initialEnd = initial
+    ? initial.endTime.toISOString().slice(11, 16)
+    : addMinutes(initialStart, 30);
 
   const [day, setDay] = useState(initialDay);
   const [startTime, setStartTime] = useState(initialStart);
@@ -76,14 +84,19 @@ export function AppointmentForm({
     >
       <label className="block">
         <span className="mb-1 block text-sm text-stone-300">Titel</span>
-        <input name="title" required defaultValue={initial?.title} className="input" />
+        <input
+          name="title"
+          required
+          defaultValue={initial?.title ?? defaultTitle ?? ""}
+          className="input"
+        />
       </label>
 
       <label className="block">
         <span className="mb-1 block text-sm text-stone-300">Verknüpfter Publisher</span>
         <select
           name="publisherEntryId"
-          defaultValue={initial?.publisherEntryId || ""}
+          defaultValue={initial?.publisherEntryId || defaultPublisherEntryId || ""}
           className="input"
         >
           <option value="">– keiner –</option>

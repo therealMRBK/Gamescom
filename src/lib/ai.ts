@@ -160,3 +160,62 @@ export async function suggestPublisherPriority(input: {
   }
   return parsed;
 }
+
+export async function generateReplyToInvitation(input: {
+  subject: string;
+  from: string;
+  emailText: string;
+  publisher?: string | null;
+}): Promise<string> {
+  return ask(
+    "Du bist Social-Media-Manager einer deutschsprachigen Gaming-Redaktion und beantwortest eingehende Termin-/Presseeinladungen zur gamescom 2026 (23.-30.08.2026, Köln) auf Deutsch. Gib ausschließlich den fertigen Antwort-E-Mail-Text zurück (mit Betreffzeile 'Re: ...'), keine Erklärungen.",
+    [
+      `Beantworte folgende eingehende E-Mail${input.publisher ? ` von ${input.publisher}` : ""} freundlich und bestätige grundsätzliches Interesse an einem Termin, ohne dich auf einen konkreten Slot festzulegen (das übernimmt das Team manuell nach Abgleich mit dem eigenen Zeitplan).`,
+      `Ursprünglicher Betreff: ${input.subject}`,
+      `Von: ${input.from}`,
+      `Ursprünglicher Text (ggf. gekürzt):\n${input.emailText.slice(0, 2500)}`,
+      "Halte die Antwort kurz (max. 120 Wörter), professionell und höflich.",
+    ].join("\n"),
+    500,
+  );
+}
+
+export async function extractInvitationFromEmail(input: {
+  subject: string;
+  from: string;
+  date: string | null;
+  text: string;
+  knownPublishers: string[];
+}): Promise<{
+  isRelevant: boolean;
+  publisherGuess: string | null;
+  proposedDate: string | null;
+  proposedTime: string | null;
+  location: string | null;
+  summary: string;
+}> {
+  const text = await ask(
+    'Du bist Redaktions-Assistent für ein Gaming-Medium und sichtest ein E-Mail-Postfach nach Termin-Einladungen und Presseanfragen von Publishern zur gamescom 2026 (23.-30.08.2026, Köln). Antworte AUSSCHLIESSLICH mit kompaktem JSON im Format {"isRelevant": true|false, "publisherGuess": "Name oder null", "proposedDate": "YYYY-MM-DD oder null", "proposedTime": "HH:mm oder null", "location": "Halle/Stand/Ort oder null", "summary": "ein kurzer Satz auf Deutsch"}. Kein Markdown, kein Codeblock, nur das reine JSON-Objekt. Setze isRelevant auf false, wenn die Mail keine gamescom-Termin-/Presseeinladung ist (z.B. Newsletter, Rechnung, Spam, interne Mail, Werbung).',
+    [
+      `Bekannte Publisher in unserer Liste (zur Zuordnung, falls passend): ${input.knownPublishers.join(", ") || "keine"}`,
+      `Betreff: ${input.subject}`,
+      `Von: ${input.from}`,
+      input.date ? `Datum der Mail: ${input.date}` : null,
+      `Text (ggf. gekürzt):\n${input.text.slice(0, 3000)}`,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+    500,
+  );
+
+  const cleaned = text.replace(/^```json\s*|\s*```$/g, "").trim();
+  const parsed = JSON.parse(cleaned);
+  return {
+    isRelevant: Boolean(parsed.isRelevant),
+    publisherGuess: typeof parsed.publisherGuess === "string" ? parsed.publisherGuess : null,
+    proposedDate: typeof parsed.proposedDate === "string" ? parsed.proposedDate : null,
+    proposedTime: typeof parsed.proposedTime === "string" ? parsed.proposedTime : null,
+    location: typeof parsed.location === "string" ? parsed.location : null,
+    summary: typeof parsed.summary === "string" ? parsed.summary : "",
+  };
+}
