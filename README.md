@@ -10,7 +10,9 @@ Internes, passwortgeschütztes Mastertool für die Messe-Planung der gamescom 20
 - **Content-Pipeline** – Format & Status pro Termin, Embargo-Feld mit Warnung bei zu früher Veröffentlichung
 - **Dashboard** – Heute-Widget, Prioritäts-Publisher ohne Termin, Kennzahlen
 - **KI-Funktionen** (optional, benötigt `ANTHROPIC_API_KEY`) – Content-Entwürfe pro Termin, Outreach-E-Mail-Entwürfe, tägliches KI-Briefing auf dem Dashboard, Prioritäts-/Kategorie-Vorschlag beim Anlegen neuer Publisher-Einträge
-- **Postfach-Scan** (optional, benötigt `ANTHROPIC_API_KEY` + `IMAP_ENCRYPTION_KEY`) – jede:r Nutzer:in kann in den persönlichen Einstellungen (📬) ein eigenes IMAP-Postfach verbinden; auf Knopfdruck durchsucht die App die letzten 30 Tage nach gamescom-Einladungen und schlägt Termin sowie Antwort-E-Mail vor. Kein Hintergrund-Sync, nichts wird automatisch angelegt oder verschickt.
+- **Postfach-Scan** (optional, benötigt `ANTHROPIC_API_KEY` + `IMAP_ENCRYPTION_KEY`) – jede:r Nutzer:in kann in den persönlichen Einstellungen (📬) ein eigenes IMAP-Postfach verbinden; auf Knopfdruck durchsucht die App die letzten 30 Tage nach gamescom-Einladungen und schlägt Termin sowie Antwort-E-Mail vor. Bereits geprüfte Mails werden pro Postfach zwischengespeichert, ein erneuter Scan prüft nur neu eingetroffene Mails. Der KI-Prompt für den Antwort-Entwurf ist direkt editierbar, ebenso der generierte Entwurf selbst. Kein Hintergrund-Sync, nichts wird automatisch angelegt oder verschickt.
+- **Terminvorschläge** – beim Anlegen eines neuen Termins schlägt die App passende freie Slots vor, basierend auf bestehenden Terminen, Pufferzeiten und der Nähe zur Halle des jeweils vorigen/nächsten Termins (nutzt das Hallen-Schema, siehe unten).
+- **Hallenplan** (🗺️) – schematische, interaktive Übersicht der Messehallen mit einfacher Routensuche zwischen zwei Hallen. Bewusst kein exaktes Architektur-Wegeleitsystem, sondern ein grobes Nachbarschaftsmodell (zentraler Boulevard, Business Area, Randbereiche) auf Basis öffentlicher Hallenplan-Infos.
 
 ## Tech-Stack
 

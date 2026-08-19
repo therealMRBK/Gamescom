@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/rbac";
 import { encrypt, decrypt } from "@/lib/crypto";
-import { fetchCandidateEmails, testImapConnection } from "@/lib/imap";
+import { searchInboxUids, fetchEmailsByUid, matchesKeywords, testImapConnection } from "@/lib/imap";
 import { extractInvitationFromEmail } from "@/lib/ai";
 import { revalidatePath } from "next/cache";
 import { toActionResult, type ActionResult } from "@/lib/actionResult";
@@ -83,7 +83,13 @@ export type InvitationCandidate = {
   location: string | null;
 };
 
-export async function scanImapInbox(): Promise<ActionResult<InvitationCandidate[]>> {
+export type ScanResult = {
+  candidates: InvitationCandidate[];
+  totalInRange: number;
+  newlyChecked: number;
+};
+
+export async function scanImapInbox(): Promise<ActionResult<ScanResult>> {
   const session = await requireSession();
 
   return toActionResult(async () => {
@@ -93,25 +99,53 @@ export async function scanImapInbox(): Promise<ActionResult<InvitationCandidate[
     }
 
     const password = decrypt(account.encryptedPassword);
-    const emails = await fetchCandidateEmails({
+    const credentials = {
       host: account.host,
       port: account.port,
       secure: account.secure,
       username: account.username,
       password,
+    };
+
+    const uids = await searchInboxUids(credentials);
+
+    const cachedRows = await prisma.scannedEmail.findMany({
+      where: { imapAccountId: account.id, uid: { in: uids } },
+      select: { uid: true },
     });
+    const cachedUidSet = new Set(cachedRows.map((r) => r.uid));
+    const newUids = uids.filter((u) => !cachedUidSet.has(u));
 
-    if (emails.length === 0) return [];
+    const newEmails = newUids.length > 0 ? await fetchEmailsByUid(credentials, newUids) : [];
 
-    const publishers = await prisma.publisherEntry.findMany({
-      select: { id: true, publisher: true },
-    });
-    const publisherNames = publishers.map((p) => p.publisher);
-
-    const candidates: InvitationCandidate[] = [];
     let lastError: Error | null = null;
+    let checkedCount = 0;
 
-    for (const email of emails) {
+    const publisherNamesForPrompt = (
+      await prisma.publisherEntry.findMany({ select: { publisher: true } })
+    ).map((p) => p.publisher);
+
+    for (const email of newEmails) {
+      const worthChecking = matchesKeywords(email.subject, email.text);
+
+      if (!worthChecking) {
+        await prisma.scannedEmail.upsert({
+          where: { imapAccountId_uid: { imapAccountId: account.id, uid: email.uid } },
+          create: {
+            imapAccountId: account.id,
+            uid: email.uid,
+            subject: email.subject,
+            fromAddress: email.from,
+            emailDate: email.date,
+            textSnippet: "",
+            isRelevant: false,
+          },
+          update: {},
+        });
+        continue;
+      }
+
+      checkedCount++;
       let extracted;
       try {
         extracted = await extractInvitationFromEmail({
@@ -119,42 +153,77 @@ export async function scanImapInbox(): Promise<ActionResult<InvitationCandidate[
           from: email.from,
           date: email.date ? email.date.toISOString() : null,
           text: email.text,
-          knownPublishers: publisherNames,
+          knownPublishers: publisherNamesForPrompt,
         });
       } catch (e) {
+        // Nicht cachen - beim nächsten Scan erneut versuchen (z.B. bei temporärem KI-Fehler).
         lastError = e instanceof Error ? e : new Error(String(e));
         continue;
       }
 
-      if (!extracted.isRelevant) continue;
-
-      const matched = extracted.publisherGuess
-        ? publishers.find(
-            (p) => p.publisher.toLowerCase() === extracted.publisherGuess!.toLowerCase(),
-          )
-        : undefined;
-
-      candidates.push({
-        uid: email.uid,
-        subject: email.subject,
-        from: email.from,
-        date: email.date ? email.date.toISOString() : null,
-        text: email.text.slice(0, 3000),
-        summary: extracted.summary,
-        publisherGuess: extracted.publisherGuess,
-        matchedPublisherId: matched?.id || null,
-        proposedDate: extracted.proposedDate,
-        proposedTime: extracted.proposedTime,
-        location: extracted.location,
+      await prisma.scannedEmail.upsert({
+        where: { imapAccountId_uid: { imapAccountId: account.id, uid: email.uid } },
+        create: {
+          imapAccountId: account.id,
+          uid: email.uid,
+          subject: email.subject,
+          fromAddress: email.from,
+          emailDate: email.date,
+          textSnippet: email.text.slice(0, 3000),
+          isRelevant: extracted.isRelevant,
+          summary: extracted.summary || null,
+          publisherGuess: extracted.publisherGuess,
+          proposedDate: extracted.proposedDate,
+          proposedTime: extracted.proposedTime,
+          location: extracted.location,
+        },
+        update: {
+          isRelevant: extracted.isRelevant,
+          summary: extracted.summary || null,
+          publisherGuess: extracted.publisherGuess,
+          proposedDate: extracted.proposedDate,
+          proposedTime: extracted.proposedTime,
+          location: extracted.location,
+        },
       });
     }
 
-    // Wenn wirklich jede einzelne Auswertung fehlgeschlagen ist (z.B. ungültiger API-Key),
-    // den Fehler durchreichen statt eine irreführende "keine Treffer"-Liste zu zeigen.
-    if (candidates.length === 0 && lastError && emails.length > 0) {
+    const relevantRows = await prisma.scannedEmail.findMany({
+      where: { imapAccountId: account.id, uid: { in: uids }, isRelevant: true },
+      orderBy: { emailDate: "desc" },
+    });
+
+    if (relevantRows.length === 0 && lastError && checkedCount > 0) {
       throw lastError;
     }
 
-    return candidates;
+    const publishers = await prisma.publisherEntry.findMany({
+      select: { id: true, publisher: true },
+    });
+
+    const candidates: InvitationCandidate[] = relevantRows.map((row) => {
+      const matched = row.publisherGuess
+        ? publishers.find((p) => p.publisher.toLowerCase() === row.publisherGuess!.toLowerCase())
+        : undefined;
+      return {
+        uid: row.uid,
+        subject: row.subject,
+        from: row.fromAddress,
+        date: row.emailDate ? row.emailDate.toISOString() : null,
+        text: row.textSnippet,
+        summary: row.summary || "",
+        publisherGuess: row.publisherGuess,
+        matchedPublisherId: matched?.id || null,
+        proposedDate: row.proposedDate,
+        proposedTime: row.proposedTime,
+        location: row.location,
+      };
+    });
+
+    return {
+      candidates,
+      totalInRange: uids.length,
+      newlyChecked: checkedCount,
+    };
   });
 }

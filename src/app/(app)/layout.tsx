@@ -33,6 +33,12 @@ export default async function AppLayout({
         </div>
         <div className="flex items-center gap-2">
           <Link
+            href="/hallplan"
+            className="rounded-lg px-2.5 py-2 text-sm text-stone-400 hover:bg-stone-800"
+          >
+            🗺️
+          </Link>
+          <Link
             href="/settings"
             className="rounded-lg px-2.5 py-2 text-sm text-stone-400 hover:bg-stone-800"
           >

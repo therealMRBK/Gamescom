@@ -161,20 +161,33 @@ export async function suggestPublisherPriority(input: {
   return parsed;
 }
 
+const DEFAULT_REPLY_INSTRUCTION =
+  "Beantworte die folgende eingehende E-Mail freundlich und bestätige grundsätzliches Interesse an einem Termin, ohne dich auf einen konkreten Slot festzulegen (das übernimmt das Team manuell nach Abgleich mit dem eigenen Zeitplan).";
+
+export function defaultReplyInstruction(publisher?: string | null): string {
+  return publisher
+    ? DEFAULT_REPLY_INSTRUCTION.replace(
+        "eingehende E-Mail",
+        `eingehende E-Mail von ${publisher}`,
+      )
+    : DEFAULT_REPLY_INSTRUCTION;
+}
+
 export async function generateReplyToInvitation(input: {
   subject: string;
   from: string;
   emailText: string;
   publisher?: string | null;
+  customInstructions?: string;
 }): Promise<string> {
   return ask(
     "Du bist Social-Media-Manager einer deutschsprachigen Gaming-Redaktion und beantwortest eingehende Termin-/Presseeinladungen zur gamescom 2026 (23.-30.08.2026, Köln) auf Deutsch. Gib ausschließlich den fertigen Antwort-E-Mail-Text zurück (mit Betreffzeile 'Re: ...'), keine Erklärungen.",
     [
-      `Beantworte folgende eingehende E-Mail${input.publisher ? ` von ${input.publisher}` : ""} freundlich und bestätige grundsätzliches Interesse an einem Termin, ohne dich auf einen konkreten Slot festzulegen (das übernimmt das Team manuell nach Abgleich mit dem eigenen Zeitplan).`,
+      input.customInstructions?.trim() || defaultReplyInstruction(input.publisher),
       `Ursprünglicher Betreff: ${input.subject}`,
       `Von: ${input.from}`,
       `Ursprünglicher Text (ggf. gekürzt):\n${input.emailText.slice(0, 2500)}`,
-      "Halte die Antwort kurz (max. 120 Wörter), professionell und höflich.",
+      "Halte die Antwort kurz (max. 150 Wörter), professionell und höflich.",
     ].join("\n"),
     500,
   );

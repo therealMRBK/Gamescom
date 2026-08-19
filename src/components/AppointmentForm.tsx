@@ -6,6 +6,7 @@ import {
   createAppointment,
   updateAppointment,
 } from "@/lib/actions/appointments";
+import { suggestAppointmentSlots, type SlotSuggestionResult } from "@/lib/actions/scheduling";
 import { EVENT_DAYS } from "@/lib/constants";
 import { dateTimeLocalToUtcWall, wallDateKey } from "@/lib/dates";
 
@@ -54,6 +55,35 @@ export function AppointmentForm({
   const [day, setDay] = useState(initialDay);
   const [startTime, setStartTime] = useState(initialStart);
   const [endTime, setEndTime] = useState(initialEnd);
+  const [publisherEntryId, setPublisherEntryId] = useState(
+    initial?.publisherEntryId || defaultPublisherEntryId || "",
+  );
+
+  const [isSuggesting, startSuggesting] = useTransition();
+  const [suggestions, setSuggestions] = useState<SlotSuggestionResult[] | null>(null);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+
+  function requestSuggestions() {
+    setSuggestError(null);
+    const duration = Math.max(15, minutesBetween(startTime, endTime));
+    startSuggesting(async () => {
+      const result = await suggestAppointmentSlots({
+        publisherEntryId: publisherEntryId || null,
+        durationMinutes: duration,
+      });
+      if (result.ok) {
+        setSuggestions(result.value);
+      } else {
+        setSuggestError(result.error);
+      }
+    });
+  }
+
+  function applySuggestion(s: SlotSuggestionResult) {
+    setDay(s.day);
+    setStartTime(s.startTime);
+    setEndTime(s.endTime);
+  }
 
   return (
     <form
@@ -96,7 +126,8 @@ export function AppointmentForm({
         <span className="mb-1 block text-sm text-stone-300">Verknüpfter Publisher</span>
         <select
           name="publisherEntryId"
-          defaultValue={initial?.publisherEntryId || defaultPublisherEntryId || ""}
+          value={publisherEntryId}
+          onChange={(e) => setPublisherEntryId(e.target.value)}
           className="input"
         >
           <option value="">– keiner –</option>
@@ -151,6 +182,50 @@ export function AppointmentForm({
           />
         </label>
       </div>
+
+      {!appointmentId && (
+        <div className="rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-sm text-stone-300">Terminvorschlag (KI)</span>
+            <button
+              type="button"
+              disabled={isSuggesting}
+              onClick={requestSuggestions}
+              className="rounded-lg bg-stone-800 px-2 py-1 text-xs text-amber-400 disabled:opacity-50"
+            >
+              {isSuggesting ? "Sucht…" : "✨ Slots vorschlagen"}
+            </button>
+          </div>
+          {suggestError && <p className="text-xs text-red-400">{suggestError}</p>}
+          {!suggestions && !suggestError && (
+            <p className="text-xs text-stone-500">
+              Berücksichtigt bestehende Termine, freie Zeitfenster und Nähe zur Halle des
+              vorigen Termins.
+            </p>
+          )}
+          {suggestions && suggestions.length === 0 && (
+            <p className="text-xs text-stone-500">Keine freien Slots in dieser Dauer gefunden.</p>
+          )}
+          {suggestions && suggestions.length > 0 && (
+            <ul className="space-y-1.5">
+              {suggestions.map((s, i) => (
+                <li key={i}>
+                  <button
+                    type="button"
+                    onClick={() => applySuggestion(s)}
+                    className="w-full rounded-lg bg-stone-800 px-3 py-2 text-left text-xs text-stone-200 active:bg-stone-700"
+                  >
+                    <span className="font-console tabular-nums text-amber-500">
+                      {s.dayLabel} · {s.startTime}–{s.endTime}
+                    </span>
+                    <span className="block text-stone-400">{s.reason}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
@@ -207,4 +282,11 @@ function addMinutes(time: string, minutesToAdd: number): string {
   const newHh = Math.floor(total / 60);
   const newMm = total % 60;
   return `${String(newHh).padStart(2, "0")}:${String(newMm).padStart(2, "0")}`;
+}
+
+function minutesBetween(start: string, end: string): number {
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  if ([sh, sm, eh, em].some(Number.isNaN)) return 30;
+  return (eh * 60 + em - (sh * 60 + sm) + 24 * 60) % (24 * 60);
 }

@@ -167,6 +167,33 @@ model ImapAccount {
   encryptedPassword String
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  scannedEmails ScannedEmail[]
+}
+
+/**
+ * Cache pro bereits ausgewerteter Mail (IMAP-UID), damit ein erneuter
+ * "Postfach durchsuchen"-Lauf nicht dieselben Mails erneut herunterlädt
+ * und erneut durch die KI schickt.
+ */
+model ScannedEmail {
+  id              String      @id @default(cuid())
+  imapAccountId   String
+  imapAccount     ImapAccount @relation(fields: [imapAccountId], references: [id], onDelete: Cascade)
+  uid             Int
+  subject         String
+  fromAddress     String
+  emailDate       DateTime?
+  textSnippet     String
+  isRelevant      Boolean
+  summary         String?
+  publisherGuess  String?
+  proposedDate    String?
+  proposedTime    String?
+  location        String?
+  scannedAt       DateTime    @default(now())
+
+  @@unique([imapAccountId, uid])
 }
 
 model Availability {

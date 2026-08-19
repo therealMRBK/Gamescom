@@ -6,12 +6,20 @@ import { scanImapInbox, type InvitationCandidate } from "@/lib/actions/imap";
 import { draftReplyToInvitation } from "@/lib/actions/ai";
 import { EVENT_DAYS } from "@/lib/constants";
 
+function defaultInstruction(publisher: string | null): string {
+  return `Beantworte die folgende eingehende E-Mail${publisher ? ` von ${publisher}` : ""} freundlich und bestätige grundsätzliches Interesse an einem Termin, ohne dich auf einen konkreten Slot festzulegen (das übernimmt das Team manuell nach Abgleich mit dem eigenen Zeitplan).`;
+}
+
 export function InboxScanner({ hasAccount }: { hasAccount: boolean }) {
   const [isPending, startTransition] = useTransition();
   const [candidates, setCandidates] = useState<InvitationCandidate[] | null>(null);
+  const [scanMeta, setScanMeta] = useState<{ totalInRange: number; newlyChecked: number } | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<number, string>>({});
   const [replyErrors, setReplyErrors] = useState<Record<number, string>>({});
+  const [promptTexts, setPromptTexts] = useState<Record<number, string>>({});
   const [draftingUid, setDraftingUid] = useState<number | null>(null);
 
   function scan() {
@@ -19,11 +27,19 @@ export function InboxScanner({ hasAccount }: { hasAccount: boolean }) {
     startTransition(async () => {
       const result = await scanImapInbox();
       if (result.ok) {
-        setCandidates(result.value);
+        setCandidates(result.value.candidates);
+        setScanMeta({
+          totalInRange: result.value.totalInRange,
+          newlyChecked: result.value.newlyChecked,
+        });
       } else {
         setError(result.error);
       }
     });
+  }
+
+  function promptFor(c: InvitationCandidate): string {
+    return promptTexts[c.uid] ?? defaultInstruction(c.publisherGuess);
   }
 
   function draftReply(candidate: InvitationCandidate) {
@@ -35,6 +51,7 @@ export function InboxScanner({ hasAccount }: { hasAccount: boolean }) {
         from: candidate.from,
         emailText: candidate.text,
         publisher: candidate.publisherGuess,
+        customInstructions: promptFor(candidate),
       });
       if (result.ok) {
         setReplyDrafts((prev) => ({ ...prev, [candidate.uid]: result.value }));
@@ -86,12 +103,20 @@ export function InboxScanner({ hasAccount }: { hasAccount: boolean }) {
       {hasAccount && !candidates && !error && (
         <p className="text-xs text-stone-500">
           Durchsucht die letzten 30 Tage nach möglichen Termin-/Presseeinladungen von
-          Publishern und schlägt jeweils Termin und Antwort vor. Nichts wird automatisch
-          angelegt oder verschickt.
+          Publishern und schlägt jeweils Termin und Antwort vor. Bereits geprüfte Mails
+          werden zwischengespeichert und bei erneutem Durchsuchen übersprungen. Nichts wird
+          automatisch angelegt oder verschickt.
         </p>
       )}
 
       {error && <p className="text-xs text-red-400">{error}</p>}
+
+      {scanMeta && (
+        <p className="mb-2 text-[11px] text-stone-500">
+          {scanMeta.totalInRange} Mails im Zeitraum, {scanMeta.newlyChecked} davon neu geprüft
+          (Rest aus dem Cache).
+        </p>
+      )}
 
       {candidates && candidates.length === 0 && !error && (
         <p className="text-xs text-stone-500">Keine passenden Einladungen gefunden.</p>
@@ -132,27 +157,47 @@ export function InboxScanner({ hasAccount }: { hasAccount: boolean }) {
                 >
                   Termin anlegen
                 </Link>
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={() => draftReply(c)}
-                  className="rounded-lg bg-stone-800 px-2.5 py-1.5 text-xs text-amber-400 disabled:opacity-50"
-                >
-                  {draftingUid === c.uid ? "Entwirft…" : "✨ Antwort entwerfen"}
-                </button>
               </div>
+
+              <label className="mt-2 block">
+                <span className="mb-1 block text-[11px] text-stone-500">
+                  Anweisung an die KI für die Antwort (bearbeitbar)
+                </span>
+                <textarea
+                  value={promptFor(c)}
+                  onChange={(e) =>
+                    setPromptTexts((prev) => ({ ...prev, [c.uid]: e.target.value }))
+                  }
+                  rows={3}
+                  className="input text-xs"
+                />
+              </label>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => draftReply(c)}
+                className="mt-2 rounded-lg bg-stone-800 px-2.5 py-1.5 text-xs text-amber-400 disabled:opacity-50"
+              >
+                {draftingUid === c.uid ? "Entwirft…" : "✨ Antwort entwerfen"}
+              </button>
 
               {replyErrors[c.uid] && (
                 <p className="mt-1 text-xs text-red-400">{replyErrors[c.uid]}</p>
               )}
-              {replyDrafts[c.uid] && (
-                <textarea
-                  readOnly
-                  value={replyDrafts[c.uid]}
-                  rows={8}
-                  className="input mt-2 text-sm"
-                  onFocus={(e) => e.target.select()}
-                />
+              {replyDrafts[c.uid] !== undefined && (
+                <label className="mt-2 block">
+                  <span className="mb-1 block text-[11px] text-stone-500">
+                    Antwort-Entwurf (bearbeitbar)
+                  </span>
+                  <textarea
+                    value={replyDrafts[c.uid]}
+                    onChange={(e) =>
+                      setReplyDrafts((prev) => ({ ...prev, [c.uid]: e.target.value }))
+                    }
+                    rows={8}
+                    className="input text-sm"
+                  />
+                </label>
               )}
             </li>
           ))}

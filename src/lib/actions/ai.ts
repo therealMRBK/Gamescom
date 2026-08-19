@@ -114,6 +114,7 @@ export async function draftReplyToInvitation(input: {
   from: string;
   emailText: string;
   publisher?: string | null;
+  customInstructions?: string;
 }): Promise<ActionResult<string>> {
   await requireSession();
   return toActionResult(() => generateReplyToInvitation(input));

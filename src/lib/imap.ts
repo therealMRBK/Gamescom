@@ -40,8 +40,14 @@ const KEYWORDS = [
   "meet to match",
 ];
 
-const LOOKBACK_DAYS = 30;
-const MAX_CANDIDATE_EMAILS = 20;
+export function matchesKeywords(subject: string, text: string): boolean {
+  const haystack = `${subject} ${text}`.toLowerCase();
+  return KEYWORDS.some((k) => haystack.includes(k));
+}
+
+export const LOOKBACK_DAYS = 30;
+const MAX_UIDS_PER_SCAN = 300;
+const MAX_NEW_FETCH_PER_SCAN = 40;
 
 function buildClient(account: ImapAccountCredentials): ImapFlow {
   return new ImapFlow({
@@ -70,11 +76,45 @@ export async function testImapConnection(account: ImapAccountCredentials): Promi
   }
 }
 
-export async function fetchCandidateEmails(
-  account: ImapAccountCredentials,
-): Promise<FetchedEmail[]> {
+/** Nur die UIDs im Zeitraum holen (kein Body-Download) - billig, für den Cache-Abgleich. */
+export async function searchInboxUids(account: ImapAccountCredentials): Promise<number[]> {
   const client = buildClient(account);
 
+  try {
+    await client.connect();
+  } catch (error) {
+    throw new Error(describeImapError(error, account.host));
+  }
+
+  try {
+    const lock = await client.getMailboxLock("INBOX", { readOnly: true });
+    try {
+      const since = new Date();
+      since.setDate(since.getDate() - LOOKBACK_DAYS);
+
+      const uids = await client.search({ since }, { uid: true });
+      return uids ? uids.slice(-MAX_UIDS_PER_SCAN) : [];
+    } finally {
+      lock.release();
+    }
+  } finally {
+    try {
+      await client.logout();
+    } catch {
+      client.close();
+    }
+  }
+}
+
+/** Lädt und parst nur die angegebenen UIDs (z.B. die noch nicht im Cache sind). */
+export async function fetchEmailsByUid(
+  account: ImapAccountCredentials,
+  uids: number[],
+): Promise<FetchedEmail[]> {
+  if (uids.length === 0) return [];
+  const capped = uids.slice(-MAX_NEW_FETCH_PER_SCAN);
+
+  const client = buildClient(account);
   try {
     await client.connect();
   } catch (error) {
@@ -85,16 +125,8 @@ export async function fetchCandidateEmails(
   try {
     const lock = await client.getMailboxLock("INBOX", { readOnly: true });
     try {
-      const since = new Date();
-      since.setDate(since.getDate() - LOOKBACK_DAYS);
-
-      const uids = await client.search({ since }, { uid: true });
-      if (!uids || uids.length === 0) {
-        return [];
-      }
-
       const messages = await client.fetchAll(
-        uids.slice(-300),
+        capped,
         { source: true, envelope: true },
         { uid: true },
       );
@@ -111,9 +143,6 @@ export async function fetchCandidateEmails(
 
         const subject = parsed.subject || message.envelope?.subject || "";
         const bodyText = (parsed.text || "").slice(0, 5000);
-        const haystack = `${subject} ${bodyText}`.toLowerCase();
-        if (!KEYWORDS.some((k) => haystack.includes(k))) continue;
-
         const fromText =
           parsed.from?.text ||
           message.envelope?.from?.map((a) => a.address).filter(Boolean).join(", ") ||
@@ -138,9 +167,7 @@ export async function fetchCandidateEmails(
     }
   }
 
-  return results
-    .sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0))
-    .slice(0, MAX_CANDIDATE_EMAILS);
+  return results;
 }
 
 function describeImapError(error: unknown, host: string): string {
