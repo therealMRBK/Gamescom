@@ -1,13 +1,30 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { HALL_NODES, HALL_EDGES, findHallPath, hallLabel } from "@/lib/hallMap";
+import {
+  HALL_NODES,
+  HALL_EDGES,
+  findHallPath,
+  hallLabel,
+  HALLPLAN_IMAGE,
+  HALLPLAN_IMAGE_WIDTH,
+  HALLPLAN_IMAGE_HEIGHT,
+  type HallNode,
+} from "@/lib/hallMap";
 
-const VIEWBOX = "0 0 620 400";
+const VIEWBOX = `0 0 ${HALLPLAN_IMAGE_WIDTH} ${HALLPLAN_IMAGE_HEIGHT}`;
+
+const AREA_COLORS: Record<HallNode["area"], string> = {
+  business: "#7c3aed",
+  entertainment: "#0ea5e9",
+  special: "#f59e0b",
+  entrance: "#f5f5f4",
+};
 
 export function HallMap() {
-  const [from, setFrom] = useState(HALL_NODES[0].id);
-  const [to, setTo] = useState(HALL_NODES[HALL_NODES.length - 1].id);
+  const routableNodes = HALL_NODES.filter((n) => n.area !== "entrance");
+  const [from, setFrom] = useState(routableNodes[0].id);
+  const [to, setTo] = useState(routableNodes[routableNodes.length - 1].id);
   const [path, setPath] = useState<string[] | null | undefined>(undefined);
 
   const pathEdgeSet = useMemo(() => {
@@ -29,8 +46,9 @@ export function HallMap() {
   return (
     <div className="space-y-3">
       <p className="rounded-lg bg-amber-950/40 px-3 py-2 text-xs text-amber-300 ring-1 ring-amber-900">
-        Schematische Übersicht (nicht maßstabsgetreu, keine exakte
-        Innenraum-Wegeleitung) - zeigt grob, welche Hallenbereiche auf dem Weg liegen.
+        Offizieller gamescom-2026-Hallenplan (Köln, 26.–30.08.2026) mit
+        Marken für Routen zwischen Hallen/Eingängen - Nachbarschaften aus dem
+        Plan abgelesen, aber ohne exakte Innenraum-Wegeleitung.
       </p>
 
       <div className="grid grid-cols-2 gap-3">
@@ -64,12 +82,21 @@ export function HallMap() {
         Route anzeigen
       </button>
 
-      <div className="overflow-x-auto rounded-xl bg-stone-900 p-2 ring-1 ring-stone-800">
-        <svg viewBox={VIEWBOX} className="h-auto w-full min-w-[560px]">
+      <div className="overflow-x-auto rounded-xl bg-stone-900 ring-1 ring-stone-800">
+        <svg viewBox={VIEWBOX} className="h-auto w-full min-w-[680px]">
+          <image
+            href={HALLPLAN_IMAGE}
+            x={0}
+            y={0}
+            width={HALLPLAN_IMAGE_WIDTH}
+            height={HALLPLAN_IMAGE_HEIGHT}
+          />
+
           {HALL_EDGES.map(([a, b]) => {
             const na = nodeById(a);
             const nb = nodeById(b);
             const onPath = pathEdgeSet.has(`${a}-${b}`);
+            if (!onPath) return null;
             return (
               <line
                 key={`${a}-${b}`}
@@ -77,37 +104,39 @@ export function HallMap() {
                 y1={na.y}
                 x2={nb.x}
                 y2={nb.y}
-                stroke={onPath ? "#d97706" : "#44403c"}
-                strokeWidth={onPath ? 4 : 2}
+                stroke="#f59e0b"
+                strokeWidth={6}
+                strokeLinecap="round"
+                opacity={0.85}
               />
             );
           })}
+
           {HALL_NODES.map((n) => {
             const onPath = pathNodeSet.has(n.id);
             const isEndpoint = n.id === from || n.id === to;
+            const radius = isEndpoint ? 20 : onPath ? 15 : 11;
             return (
-              <g key={n.id}>
-                <circle
-                  cx={n.x}
-                  cy={n.y}
-                  r={isEndpoint ? 20 : 16}
-                  fill={onPath ? "#b45309" : "#292524"}
-                  stroke={isEndpoint ? "#f59e0b" : "#57534e"}
-                  strokeWidth={isEndpoint ? 3 : 1.5}
-                />
-                <text
-                  x={n.x}
-                  y={n.y + 34}
-                  textAnchor="middle"
-                  fontSize="11"
-                  fill={onPath ? "#fbbf24" : "#a8a29e"}
-                >
-                  {n.label}
-                </text>
-              </g>
+              <circle
+                key={n.id}
+                cx={n.x}
+                cy={n.y}
+                r={radius}
+                fill={onPath ? "#f59e0b" : AREA_COLORS[n.area]}
+                fillOpacity={onPath ? 0.95 : 0.55}
+                stroke={isEndpoint ? "#fff7ed" : "#1c1917"}
+                strokeWidth={isEndpoint ? 4 : 2}
+              />
             );
           })}
         </svg>
+      </div>
+
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-stone-500">
+        <LegendDot color={AREA_COLORS.business} label="Business Area" />
+        <LegendDot color={AREA_COLORS.entertainment} label="Entertainment Area" />
+        <LegendDot color={AREA_COLORS.special} label="Arena / Indie / Merch" />
+        <LegendDot color={AREA_COLORS.entrance} label="Eingang" />
       </div>
 
       {path && (
@@ -122,5 +151,14 @@ export function HallMap() {
         </p>
       )}
     </div>
+  );
+}
+
+function LegendDot({ color, label }: { color: string; label: string }) {
+  return (
+    <span className="flex items-center gap-1">
+      <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+      {label}
+    </span>
   );
 }
