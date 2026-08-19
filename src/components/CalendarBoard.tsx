@@ -222,6 +222,7 @@ function AppointmentBlock({
         <p className="truncate text-[10px] text-stone-400">
           {appt.publisherName}
           {appt.hall ? ` · Halle ${appt.hall}` : ""}
+          {appt.stand ? ` / Stand ${appt.stand}` : ""}
         </p>
       )}
       {appt.assignees.length > 0 && height > 55 && (
