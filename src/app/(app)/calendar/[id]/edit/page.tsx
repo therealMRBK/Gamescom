@@ -5,6 +5,7 @@ import { AppointmentForm } from "@/components/AppointmentForm";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteAppointment } from "@/lib/actions/appointments";
 import { ContentFieldsForm } from "@/components/ContentFieldsForm";
+import { wallDateKey } from "@/lib/dates";
 
 export default async function EditAppointmentPage({
   params,
@@ -27,16 +28,18 @@ export default async function EditAppointmentPage({
 
   if (!appointment) notFound();
 
+  const backHref = `/calendar?view=day&day=${wallDateKey(appointment.startTime)}`;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Link href="/calendar" className="text-sm text-stone-400">
+        <Link href={backHref} className="text-sm text-stone-400">
           ← Zurück
         </Link>
         <DeleteButton
           action={deleteAppointment.bind(null, appointment.id)}
           confirmText={`Termin "${appointment.title}" wirklich löschen?`}
-          redirectTo="/calendar"
+          redirectTo={backHref}
         />
       </div>
 
