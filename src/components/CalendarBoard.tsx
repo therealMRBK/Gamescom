@@ -94,8 +94,14 @@ function DayColumn({
     (_, i) => BASE_HOUR + i,
   );
 
+  const lanes = layoutLanes(day.appointments);
+  const maxLaneCount = lanes.reduce((max, l) => Math.max(max, l.laneCount), 1);
+  // Widen the column when appointments overlap instead of squeezing lanes
+  // to unreadable widths — this was the main cause of text getting cut off.
+  const columnWidth = Math.max(260, maxLaneCount * MIN_LANE_WIDTH);
+
   return (
-    <div className="w-[260px] shrink-0">
+    <div className="shrink-0" style={{ width: columnWidth }}>
       <div className="mb-2 flex items-center justify-between">
         <p className="text-sm font-semibold text-white">{day.label}</p>
         <Link
@@ -120,7 +126,7 @@ function DayColumn({
           </div>
         ))}
 
-        {layoutLanes(day.appointments).map(({ appt, lane, laneCount }) => (
+        {lanes.map(({ appt, lane, laneCount }) => (
           <AppointmentBlock
             key={appt.id}
             appt={appt}
@@ -152,6 +158,11 @@ function layoutLanes(appointments: CalendarAppointment[]) {
   return withLane.map(({ appt, lane }) => ({ appt, lane, laneCount }));
 }
 
+/** Minimum readable width per lane — below this, text gets crushed and
+ * truncated no matter what we do inside the block, so the column itself
+ * has to grow instead of squeezing lanes forever. */
+const MIN_LANE_WIDTH = 130;
+
 function AppointmentBlock({
   appt,
   isPending,
@@ -171,7 +182,7 @@ function AppointmentBlock({
   const top = (appt.startMinutes - BASE_HOUR * 60) * PX_PER_MINUTE;
   const height = Math.max(
     (appt.endMinutes - appt.startMinutes) * PX_PER_MINUTE,
-    28,
+    34,
   );
 
   const laneWidth = 100 / laneCount;
@@ -204,7 +215,7 @@ function AppointmentBlock({
       className={`absolute touch-none overflow-hidden rounded-lg border-l-4 ${borderColor} bg-stone-800 p-1.5 shadow-md active:cursor-grabbing`}
     >
       <div className="flex items-start justify-between gap-1">
-        <p className="truncate text-[11px] font-semibold text-white">
+        <p className="line-clamp-2 text-[11px] font-semibold leading-tight text-white">
           <span className="font-console tabular-nums text-amber-500">
             {formatMinutes(appt.startMinutes)}
           </span>{" "}
@@ -219,7 +230,7 @@ function AppointmentBlock({
         </Link>
       </div>
       {height > 40 && (
-        <p className="truncate text-[10px] text-stone-400">
+        <p className="line-clamp-2 text-[10px] leading-tight text-stone-400">
           {appt.publisherName}
           {appt.hall ? ` · Halle ${appt.hall}` : ""}
           {appt.stand ? ` / Stand ${appt.stand}` : ""}

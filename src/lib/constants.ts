@@ -1,7 +1,6 @@
+// Only the days actually on-site matter (Mi-So) — the earlier "dev"/ONL
+// days before the show floor opens aren't tracked here.
 export const EVENT_DAYS = [
-  { date: "2026-08-23", label: "So 23.08.", phase: "gamescom dev" },
-  { date: "2026-08-24", label: "Mo 24.08.", phase: "gamescom dev" },
-  { date: "2026-08-25", label: "Di 25.08.", phase: "gamescom dev + ONL" },
   { date: "2026-08-26", label: "Mi 26.08.", phase: "Fachbesucher/Medien" },
   { date: "2026-08-27", label: "Do 27.08.", phase: "Publikum" },
   { date: "2026-08-28", label: "Fr 28.08.", phase: "Publikum" },
