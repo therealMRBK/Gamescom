@@ -266,15 +266,20 @@ function AppointmentBlock({
           {appt.stand ? ` / Stand ${appt.stand}` : ""}
         </p>
       )}
-      {appt.assignees.length > 0 && height > 55 && (
+      {appt.assignees.length > 0 && (
+        // Always shown, not gated by block height — these used to only
+        // appear on tall blocks (height > 55), which hid them on most
+        // ordinary 30-minute appointments. Compact initials instead of
+        // full first names so they still fit even the shortest blocks.
         <div className="mt-0.5 flex flex-wrap gap-0.5">
           {appt.assignees.map((a) => (
             <span
               key={a.id}
-              className="rounded px-1 text-[9px] text-white"
+              title={a.name}
+              className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[8px] font-bold text-white"
               style={{ backgroundColor: a.color }}
             >
-              {a.name.split(" ")[0]}
+              {a.name.charAt(0)}
             </span>
           ))}
         </div>
