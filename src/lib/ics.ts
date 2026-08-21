@@ -81,3 +81,40 @@ export function buildIcsInvite(input: IcsEventInput): string {
   ];
   return lines.map(foldLine).join("\r\n") + "\r\n";
 }
+
+export type CalDavEventInput = {
+  uid: string;
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  location?: string | null;
+  description?: string | null;
+};
+
+/**
+ * A plain calendar object for direct CalDAV storage — no METHOD, no
+ * ORGANIZER/ATTENDEE. Those are iTIP scheduling concepts for the
+ * email-invite path (buildIcsInvite); a CalDAV PUT just writes the
+ * event into the calendar, so it shows up already confirmed with no
+ * accept/decline step.
+ */
+export function buildCalDavEvent(input: CalDavEventInput): string {
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "PRODID:-//Gamescom Command Center//DE",
+    "VERSION:2.0",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${input.uid}`,
+    `DTSTAMP:${toUtcStamp(new Date())}`,
+    `DTSTART:${toUtcStamp(input.startTime)}`,
+    `DTEND:${toUtcStamp(input.endTime)}`,
+    "STATUS:CONFIRMED",
+    `SUMMARY:${escapeText(input.title)}`,
+    ...(input.location ? [`LOCATION:${escapeText(input.location)}`] : []),
+    ...(input.description ? [`DESCRIPTION:${escapeText(input.description)}`] : []),
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ];
+  return lines.map(foldLine).join("\r\n") + "\r\n";
+}

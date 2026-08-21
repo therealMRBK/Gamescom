@@ -172,9 +172,17 @@ model ImapAccount {
   secure            Boolean  @default(true)
   username          String
   encryptedPassword String
+  // CalDAV writes an appointment straight into this calendar collection —
+  // no invitation/RSVP concept exists at that protocol level, so it shows
+  // up already confirmed. Preferred over the SMTP/.ics-invite path below
+  // when set; same username/password as IMAP.
+  caldavUrl String?
   // SMTP is used to push appointments as calendar invites (.ics) back into
   // this same mailbox — most providers use the same credentials as IMAP,
-  // just a different host/port, so the password isn't duplicated.
+  // just a different host/port, so the password isn't duplicated. Used
+  // as a fallback for mailboxes without CalDAV — these show up as an
+  // invitation needing accept/decline, since email-based iTIP has no
+  // "just add it, no RSVP" concept.
   smtpHost            String?
   smtpPort            Int      @default(587)
   smtpSecure          Boolean  @default(false)

@@ -9,6 +9,7 @@ type AccountStatus = {
   port: number;
   secure: boolean;
   username: string;
+  caldavUrl: string | null;
   smtpHost: string | null;
   smtpPort: number;
   smtpSecure: boolean;
@@ -26,19 +27,22 @@ export function ImapAccountForm({ account }: { account: AccountStatus }) {
     <section className="rounded-xl bg-stone-900 p-4 ring-1 ring-stone-800">
       <h2 className="mb-1 text-sm font-semibold text-stone-300">IMAP-Postfach</h2>
       <p className="mb-3 text-xs text-stone-500">
-        IMAP wird verwendet, um auf Knopfdruck nach gamescom-Einladungen zu suchen. SMTP
-        (optional) pusht jeden erstellten/geänderten/gelöschten Termin als Kalender-Einladung
-        in dasselbe Postfach zurück. Das Passwort wird verschlüsselt gespeichert, nie wieder
-        angezeigt, und für beides verwendet.
+        IMAP wird verwendet, um auf Knopfdruck nach gamescom-Einladungen zu suchen. CalDAV
+        oder SMTP (beide optional) pushen jeden erstellten/geänderten/gelöschten Termin in
+        dasselbe Postfach zurück — ist CalDAV gesetzt, landet er direkt bestätigt im Kalender;
+        sonst per SMTP als Kalender-Einladung (muss angenommen werden). Das Passwort wird
+        verschlüsselt gespeichert, nie wieder angezeigt, und für alle drei verwendet.
       </p>
 
       {account && (
         <p className="mb-3 text-xs text-stone-400">
           Verbunden: <span className="text-stone-200">{account.username}</span> ·{" "}
           {account.host}:{account.port} ({account.secure ? "TLS" : "unverschlüsselt"})
-          {account.smtpHost && (
+          {(account.caldavUrl || account.smtpHost) && (
             <>
-              {" · Kalender-Push "}
+              {" · Kalender-Push ("}
+              {account.caldavUrl ? "CalDAV, direkt bestätigt" : "SMTP, als Einladung"}
+              {") "}
               {account.calendarPushEnabled ? "aktiv" : "pausiert"}
             </>
           )}
@@ -56,6 +60,7 @@ export function ImapAccountForm({ account }: { account: AccountStatus }) {
             secure: formData.get("secure") === "on",
             username: String(formData.get("username") || ""),
             password: String(formData.get("password") || ""),
+            caldavUrl: String(formData.get("caldavUrl") || ""),
             smtpHost: String(formData.get("smtpHost") || ""),
             smtpPort: Number(formData.get("smtpPort") || 587),
             smtpSecure: formData.get("smtpSecure") === "on",
@@ -126,8 +131,32 @@ export function ImapAccountForm({ account }: { account: AccountStatus }) {
         </label>
 
         <div className="border-t border-stone-800 pt-3">
-          <p className="mb-2 text-sm font-semibold text-stone-300">
-            Kalender-Push (SMTP, optional)
+          <p className="mb-1 text-sm font-semibold text-stone-300">
+            CalDAV (empfohlen, optional)
+          </p>
+          <p className="mb-2 text-xs text-stone-500">
+            Direkter Kalender-Push ohne Einladung — landet sofort bestätigt. Die Kalender-URL
+            findet sich meist in den Konto-Einstellungen des Anbieters (z.B. iCloud, Fastmail,
+            Nextcloud zeigen sie direkt an).
+          </p>
+          <label className="block">
+            <span className="mb-1 block text-sm text-stone-300">Kalender-URL</span>
+            <input
+              name="caldavUrl"
+              defaultValue={account?.caldavUrl || ""}
+              placeholder="https://caldav.example.com/calendars/user/me/Default/ — leer lassen zum Deaktivieren"
+              className="input"
+            />
+          </label>
+        </div>
+
+        <div className="border-t border-stone-800 pt-3">
+          <p className="mb-1 text-sm font-semibold text-stone-300">
+            SMTP (Fallback, optional)
+          </p>
+          <p className="mb-2 text-xs text-stone-500">
+            Nur nötig, wenn kein CalDAV verfügbar ist — schickt eine Kalender-Einladung per
+            E-Mail, die im Kalender angenommen werden muss.
           </p>
           <label className="block">
             <span className="mb-1 block text-sm text-stone-300">SMTP-Server</span>
@@ -159,19 +188,19 @@ export function ImapAccountForm({ account }: { account: AccountStatus }) {
               <span className="text-sm text-stone-300">TLS/SSL (statt STARTTLS)</span>
             </label>
           </div>
-
-          <label className="mt-3 flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="calendarPushEnabled"
-              defaultChecked={account?.calendarPushEnabled ?? true}
-              className="h-4 w-4"
-            />
-            <span className="text-sm text-stone-300">
-              Termine automatisch als Kalender-Einladung in dieses Postfach pushen
-            </span>
-          </label>
         </div>
+
+        <label className="flex items-center gap-2 border-t border-stone-800 pt-3">
+          <input
+            type="checkbox"
+            name="calendarPushEnabled"
+            defaultChecked={account?.calendarPushEnabled ?? true}
+            className="h-4 w-4"
+          />
+          <span className="text-sm text-stone-300">
+            Termine automatisch in dieses Postfach pushen (CalDAV oder SMTP, je nachdem was oben eingetragen ist)
+          </span>
+        </label>
 
         {error && <p className="text-xs text-red-400">{error}</p>}
         {success && <p className="text-xs text-emerald-400">{success}</p>}

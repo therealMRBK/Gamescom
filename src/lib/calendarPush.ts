@@ -1,17 +1,28 @@
 /**
- * Pushes appointment changes into assigned team members' own calendars,
- * via a calendar invite (.ics) emailed through their connected mailbox's
- * SMTP settings (see settings page). This is a best-effort side effect:
- * failures here are logged but never block the appointment mutation
- * itself — e.g. a stale SMTP password shouldn't make it impossible to
- * edit a appointment.
+ * Pushes appointment changes into assigned team members' own calendars.
+ * Two mechanisms, tried in this order per user:
  *
- * Known simplification: on update, invites are (re-)sent to whoever is
- * *currently* assigned. Someone removed from an appointment doesn't get
- * an explicit cancel for their own copy — only a full delete does.
+ * 1. CalDAV (if configured) — writes the event directly into their
+ *    calendar collection. No invitation/RSVP step exists at this
+ *    protocol level, so it shows up already confirmed.
+ * 2. SMTP (fallback) — emails a calendar invite (.ics) to their own
+ *    mailbox. This *does* show as a pending invitation needing
+ *    accept/decline in most calendar apps — email-based iTIP has no
+ *    "just add it" concept — but works anywhere IMAP/SMTP works, no
+ *    CalDAV support required.
+ *
+ * Both are best-effort: failures are logged but never block the
+ * appointment mutation itself.
+ *
+ * Known simplification: on update, the event is (re-)pushed to
+ * whoever is *currently* assigned. Someone removed from an appointment
+ * doesn't get an explicit removal for their own copy — only a full
+ * delete of the appointment does.
  */
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/crypto";
+import { buildCalDavEvent } from "@/lib/ics";
+import { deleteCalendarEvent, putCalendarEvent, type CalDavCredentials } from "@/lib/caldav";
 import { sendIcsInvite, type SmtpCredentials } from "@/lib/smtp";
 import { randomUUID } from "crypto";
 
@@ -22,6 +33,7 @@ type AssigneeWithAccount = {
   imapAccount: {
     username: string;
     encryptedPassword: string;
+    caldavUrl: string | null;
     smtpHost: string | null;
     smtpPort: number;
     smtpSecure: boolean;
@@ -29,16 +41,30 @@ type AssigneeWithAccount = {
   } | null;
 };
 
-function toCredentials(user: AssigneeWithAccount): SmtpCredentials | null {
+type PushTarget =
+  | { kind: "caldav"; creds: CalDavCredentials }
+  | { kind: "smtp"; creds: SmtpCredentials };
+
+function resolveTarget(user: AssigneeWithAccount): PushTarget | null {
   const account = user.imapAccount;
-  if (!account || !account.calendarPushEnabled || !account.smtpHost) return null;
-  return {
-    host: account.smtpHost,
-    port: account.smtpPort,
-    secure: account.smtpSecure,
-    username: account.username,
-    password: decrypt(account.encryptedPassword),
-  };
+  if (!account || !account.calendarPushEnabled) return null;
+  const password = decrypt(account.encryptedPassword);
+  if (account.caldavUrl) {
+    return { kind: "caldav", creds: { url: account.caldavUrl, username: account.username, password } };
+  }
+  if (account.smtpHost) {
+    return {
+      kind: "smtp",
+      creds: {
+        host: account.smtpHost,
+        port: account.smtpPort,
+        secure: account.smtpSecure,
+        username: account.username,
+        password,
+      },
+    };
+  }
+  return null;
 }
 
 function locationOf(hall: string | null, stand: string | null): string | null {
@@ -70,24 +96,36 @@ export async function pushAppointmentUpsert(appointmentId: string): Promise<void
 
   await Promise.allSettled(
     appt.assignments.map(async ({ user }) => {
-      const credentials = toCredentials(user);
-      if (!credentials) return;
+      const target = resolveTarget(user);
+      if (!target) return;
       try {
-        await sendIcsInvite(credentials, {
-          uid,
-          sequence,
-          method: "REQUEST",
-          title: appt.title,
-          startTime: appt.startTime,
-          endTime: appt.endTime,
-          location,
-          description: appt.notes,
-          organizerEmail: credentials.username,
-          attendeeEmail: user.email,
-          attendeeName: user.name,
-        });
+        if (target.kind === "caldav") {
+          const ics = buildCalDavEvent({
+            uid,
+            title: appt.title,
+            startTime: appt.startTime,
+            endTime: appt.endTime,
+            location,
+            description: appt.notes,
+          });
+          await putCalendarEvent(target.creds, uid, ics);
+        } else {
+          await sendIcsInvite(target.creds, {
+            uid,
+            sequence,
+            method: "REQUEST",
+            title: appt.title,
+            startTime: appt.startTime,
+            endTime: appt.endTime,
+            location,
+            description: appt.notes,
+            organizerEmail: target.creds.username,
+            attendeeEmail: user.email,
+            attendeeName: user.name,
+          });
+        }
       } catch (error) {
-        console.error(`[calendarPush] Kalender-Invite an ${user.email} fehlgeschlagen:`, error);
+        console.error(`[calendarPush] Kalender-Push an ${user.email} fehlgeschlagen:`, error);
       }
     }),
   );
@@ -102,30 +140,34 @@ export async function pushAppointmentDelete(appointmentId: string): Promise<void
       },
     },
   });
-  if (!appt || !appt.icsUid) return; // never pushed -> nothing to cancel
+  if (!appt || !appt.icsUid) return; // never pushed -> nothing to remove
 
   const location = locationOf(appt.hall, appt.stand);
 
   await Promise.allSettled(
     appt.assignments.map(async ({ user }) => {
-      const credentials = toCredentials(user);
-      if (!credentials) return;
+      const target = resolveTarget(user);
+      if (!target) return;
       try {
-        await sendIcsInvite(credentials, {
-          uid: appt.icsUid!,
-          sequence: appt.icsSequence + 1,
-          method: "CANCEL",
-          title: appt.title,
-          startTime: appt.startTime,
-          endTime: appt.endTime,
-          location,
-          description: appt.notes,
-          organizerEmail: credentials.username,
-          attendeeEmail: user.email,
-          attendeeName: user.name,
-        });
+        if (target.kind === "caldav") {
+          await deleteCalendarEvent(target.creds, appt.icsUid!);
+        } else {
+          await sendIcsInvite(target.creds, {
+            uid: appt.icsUid!,
+            sequence: appt.icsSequence + 1,
+            method: "CANCEL",
+            title: appt.title,
+            startTime: appt.startTime,
+            endTime: appt.endTime,
+            location,
+            description: appt.notes,
+            organizerEmail: target.creds.username,
+            attendeeEmail: user.email,
+            attendeeName: user.name,
+          });
+        }
       } catch (error) {
-        console.error(`[calendarPush] Kalender-Absage an ${user.email} fehlgeschlagen:`, error);
+        console.error(`[calendarPush] Kalender-Entfernung für ${user.email} fehlgeschlagen:`, error);
       }
     }),
   );

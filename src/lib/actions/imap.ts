@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/rbac";
 import { encrypt, decrypt } from "@/lib/crypto";
 import { searchInboxUids, fetchEmailsByUid, matchesKeywords, testImapConnection } from "@/lib/imap";
 import { testSmtpConnection } from "@/lib/smtp";
+import { testCalDavConnection } from "@/lib/caldav";
 import { extractInvitationFromEmail } from "@/lib/ai";
 import { revalidatePath } from "next/cache";
 import { toActionResult, type ActionResult } from "@/lib/actionResult";
@@ -15,6 +16,7 @@ export type ImapAccountInput = {
   secure: boolean;
   username: string;
   password: string;
+  caldavUrl: string;
   smtpHost: string;
   smtpPort: number;
   smtpSecure: boolean;
@@ -30,6 +32,7 @@ export async function getImapAccountStatus() {
       port: true,
       secure: true,
       username: true,
+      caldavUrl: true,
       smtpHost: true,
       smtpPort: true,
       smtpSecure: true,
@@ -52,8 +55,18 @@ export async function saveImapAccount(input: ImapAccountInput): Promise<ActionRe
       password: input.password,
     });
 
-    // SMTP ist optional -- wer nur die Posteingangs-Suche nutzen will, kann
-    // das Feld leer lassen und bekommt keinen Kalender-Push.
+    // CalDAV und SMTP sind beide optional -- wer nur die Posteingangs-Suche
+    // nutzen will, kann beide Felder leer lassen und bekommt keinen
+    // Kalender-Push. Ist CalDAV gesetzt, hat es beim Push Vorrang vor SMTP
+    // (siehe calendarPush.ts) -- landet direkt bestätigt statt als
+    // Einladung.
+    if (input.caldavUrl) {
+      await testCalDavConnection({
+        url: input.caldavUrl,
+        username: input.username,
+        password: input.password,
+      });
+    }
     if (input.smtpHost) {
       await testSmtpConnection({
         host: input.smtpHost,
@@ -66,6 +79,7 @@ export async function saveImapAccount(input: ImapAccountInput): Promise<ActionRe
 
     const encryptedPassword = encrypt(input.password);
     const smtpFields = {
+      caldavUrl: input.caldavUrl || null,
       smtpHost: input.smtpHost || null,
       smtpPort: input.smtpPort,
       smtpSecure: input.smtpSecure,
