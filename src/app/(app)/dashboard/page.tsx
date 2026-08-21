@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { berlinTodayKey, formatWallDateLabel, formatWallTime } from "@/lib/dates";
-import { EVENT_DAYS, PRIORITY_COLORS, PRIORITY_LABELS } from "@/lib/constants";
+import { EVENT_DAYS } from "@/lib/constants";
 import { DailyBriefing } from "@/components/DailyBriefing";
 import { StatDial } from "@/components/StatDial";
 
@@ -14,29 +13,20 @@ export default async function DashboardPage() {
   const targetDayStart = new Date(`${targetDayKey}T00:00:00.000Z`);
   const targetDayEnd = new Date(`${targetDayKey}T23:59:59.999Z`);
 
-  const [todaysAppointments, priorityWithoutAppointment, statusCounts] =
-    await Promise.all([
-      prisma.appointment.findMany({
-        where: { startTime: { gte: targetDayStart, lte: targetDayEnd } },
-        orderBy: { startTime: "asc" },
-        include: {
-          publisherEntry: true,
-          assignments: { include: { user: true } },
-        },
-      }),
-      prisma.publisherEntry.findMany({
-        where: {
-          priority: "HOCH",
-          contactStatus: { notIn: ["BESTAETIGT", "ABGELEHNT"] },
-          appointments: { none: {} },
-        },
-        orderBy: { publisher: "asc" },
-      }),
-      prisma.publisherEntry.groupBy({
-        by: ["contactStatus"],
-        _count: true,
-      }),
-    ]);
+  const [todaysAppointments, statusCounts] = await Promise.all([
+    prisma.appointment.findMany({
+      where: { startTime: { gte: targetDayStart, lte: targetDayEnd } },
+      orderBy: { startTime: "asc" },
+      include: {
+        publisherEntry: true,
+        assignments: { include: { user: true } },
+      },
+    }),
+    prisma.publisherEntry.groupBy({
+      by: ["contactStatus"],
+      _count: true,
+    }),
+  ]);
 
   const countFor = (status: string) =>
     statusCounts.find((s) => s.contactStatus === status)?._count ?? 0;
@@ -106,47 +96,6 @@ export default async function DashboardPage() {
                     ))}
                   </div>
                 )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-stone-300">
-            Prioritäts-Publisher ohne Termin
-          </h2>
-          <Link href="/publishers" className="text-xs text-amber-500">
-            Alle ansehen
-          </Link>
-        </div>
-        {priorityWithoutAppointment.length === 0 ? (
-          <p className="rounded-xl bg-stone-900 p-4 text-sm text-stone-500 ring-1 ring-stone-800">
-            Alle High-Priority-Publisher haben einen Termin oder sind erledigt. 🎉
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {priorityWithoutAppointment.map((entry) => (
-              <li key={entry.id}>
-                <Link
-                  href={`/publishers/${entry.id}`}
-                  className="flex items-center justify-between rounded-xl bg-stone-900 p-3 ring-1 ring-stone-800 active:bg-stone-800"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      {entry.publisher}
-                    </p>
-                    <p className="text-xs text-stone-400">
-                      {entry.games.slice(0, 2).join(", ")}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-2 py-1 text-[11px] font-medium ${PRIORITY_COLORS[entry.priority]}`}
-                  >
-                    {PRIORITY_LABELS[entry.priority]}
-                  </span>
-                </Link>
               </li>
             ))}
           </ul>

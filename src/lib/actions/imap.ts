@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/rbac";
 import { encrypt, decrypt } from "@/lib/crypto";
 import { searchInboxUids, fetchEmailsByUid, matchesKeywords, testImapConnection } from "@/lib/imap";
+import { testSmtpConnection } from "@/lib/smtp";
 import { extractInvitationFromEmail } from "@/lib/ai";
 import { revalidatePath } from "next/cache";
 import { toActionResult, type ActionResult } from "@/lib/actionResult";
@@ -14,13 +15,27 @@ export type ImapAccountInput = {
   secure: boolean;
   username: string;
   password: string;
+  smtpHost: string;
+  smtpPort: number;
+  smtpSecure: boolean;
+  calendarPushEnabled: boolean;
 };
 
 export async function getImapAccountStatus() {
   const session = await requireSession();
   return prisma.imapAccount.findUnique({
     where: { userId: session.user.id },
-    select: { host: true, port: true, secure: true, username: true, updatedAt: true },
+    select: {
+      host: true,
+      port: true,
+      secure: true,
+      username: true,
+      smtpHost: true,
+      smtpPort: true,
+      smtpSecure: true,
+      calendarPushEnabled: true,
+      updatedAt: true,
+    },
   });
 }
 
@@ -37,7 +52,25 @@ export async function saveImapAccount(input: ImapAccountInput): Promise<ActionRe
       password: input.password,
     });
 
+    // SMTP ist optional -- wer nur die Posteingangs-Suche nutzen will, kann
+    // das Feld leer lassen und bekommt keinen Kalender-Push.
+    if (input.smtpHost) {
+      await testSmtpConnection({
+        host: input.smtpHost,
+        port: input.smtpPort,
+        secure: input.smtpSecure,
+        username: input.username,
+        password: input.password,
+      });
+    }
+
     const encryptedPassword = encrypt(input.password);
+    const smtpFields = {
+      smtpHost: input.smtpHost || null,
+      smtpPort: input.smtpPort,
+      smtpSecure: input.smtpSecure,
+      calendarPushEnabled: input.calendarPushEnabled,
+    };
 
     await prisma.imapAccount.upsert({
       where: { userId: session.user.id },
@@ -48,6 +81,7 @@ export async function saveImapAccount(input: ImapAccountInput): Promise<ActionRe
         secure: input.secure,
         username: input.username,
         encryptedPassword,
+        ...smtpFields,
       },
       update: {
         host: input.host,
@@ -55,6 +89,7 @@ export async function saveImapAccount(input: ImapAccountInput): Promise<ActionRe
         secure: input.secure,
         username: input.username,
         encryptedPassword,
+        ...smtpFields,
       },
     });
 

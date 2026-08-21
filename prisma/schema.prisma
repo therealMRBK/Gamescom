@@ -126,6 +126,13 @@ model Appointment {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
+  // Identity for the calendar invite pushed to assignees' mailboxes (see
+  // src/lib/calendarPush.ts). Set on first push; icsSequence increments on
+  // every re-push so calendar apps treat it as an update to the same event
+  // rather than a duplicate.
+  icsUid      String? @unique
+  icsSequence Int     @default(0)
+
   assignments  AppointmentAssignment[]
   contentPiece ContentPiece?
 
@@ -165,8 +172,15 @@ model ImapAccount {
   secure            Boolean  @default(true)
   username          String
   encryptedPassword String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  // SMTP is used to push appointments as calendar invites (.ics) back into
+  // this same mailbox — most providers use the same credentials as IMAP,
+  // just a different host/port, so the password isn't duplicated.
+  smtpHost            String?
+  smtpPort            Int      @default(587)
+  smtpSecure          Boolean  @default(false)
+  calendarPushEnabled Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   scannedEmails ScannedEmail[]
 }

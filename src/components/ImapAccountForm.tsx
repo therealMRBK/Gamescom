@@ -9,6 +9,10 @@ type AccountStatus = {
   port: number;
   secure: boolean;
   username: string;
+  smtpHost: string | null;
+  smtpPort: number;
+  smtpSecure: boolean;
+  calendarPushEnabled: boolean;
   updatedAt: Date;
 } | null;
 
@@ -22,15 +26,22 @@ export function ImapAccountForm({ account }: { account: AccountStatus }) {
     <section className="rounded-xl bg-stone-900 p-4 ring-1 ring-stone-800">
       <h2 className="mb-1 text-sm font-semibold text-stone-300">IMAP-Postfach</h2>
       <p className="mb-3 text-xs text-stone-500">
-        Wird nur verwendet, um auf Knopfdruck nach gamescom-Einladungen zu suchen – keine
-        automatische Synchronisierung im Hintergrund. Das Passwort wird verschlüsselt
-        gespeichert und nie wieder angezeigt.
+        IMAP wird verwendet, um auf Knopfdruck nach gamescom-Einladungen zu suchen. SMTP
+        (optional) pusht jeden erstellten/geänderten/gelöschten Termin als Kalender-Einladung
+        in dasselbe Postfach zurück. Das Passwort wird verschlüsselt gespeichert, nie wieder
+        angezeigt, und für beides verwendet.
       </p>
 
       {account && (
         <p className="mb-3 text-xs text-stone-400">
           Verbunden: <span className="text-stone-200">{account.username}</span> ·{" "}
           {account.host}:{account.port} ({account.secure ? "TLS" : "unverschlüsselt"})
+          {account.smtpHost && (
+            <>
+              {" · Kalender-Push "}
+              {account.calendarPushEnabled ? "aktiv" : "pausiert"}
+            </>
+          )}
         </p>
       )}
 
@@ -45,6 +56,10 @@ export function ImapAccountForm({ account }: { account: AccountStatus }) {
             secure: formData.get("secure") === "on",
             username: String(formData.get("username") || ""),
             password: String(formData.get("password") || ""),
+            smtpHost: String(formData.get("smtpHost") || ""),
+            smtpPort: Number(formData.get("smtpPort") || 587),
+            smtpSecure: formData.get("smtpSecure") === "on",
+            calendarPushEnabled: formData.get("calendarPushEnabled") === "on",
           };
           startTransition(async () => {
             const result = await saveImapAccount(input);
@@ -105,7 +120,58 @@ export function ImapAccountForm({ account }: { account: AccountStatus }) {
             Passwort{account ? " (zum Aktualisieren erneut eingeben)" : ""}
           </span>
           <input name="password" type="password" required className="input" />
+          <span className="mt-1 block text-xs text-stone-500">
+            Wird für IMAP und SMTP verwendet.
+          </span>
         </label>
+
+        <div className="border-t border-stone-800 pt-3">
+          <p className="mb-2 text-sm font-semibold text-stone-300">
+            Kalender-Push (SMTP, optional)
+          </p>
+          <label className="block">
+            <span className="mb-1 block text-sm text-stone-300">SMTP-Server</span>
+            <input
+              name="smtpHost"
+              defaultValue={account?.smtpHost || ""}
+              placeholder="smtp.example.com — leer lassen zum Deaktivieren"
+              className="input"
+            />
+          </label>
+
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="mb-1 block text-sm text-stone-300">Port</span>
+              <input
+                name="smtpPort"
+                type="number"
+                defaultValue={account?.smtpPort ?? 587}
+                className="input"
+              />
+            </label>
+            <label className="flex items-end gap-2 pb-2.5">
+              <input
+                type="checkbox"
+                name="smtpSecure"
+                defaultChecked={account?.smtpSecure ?? false}
+                className="h-4 w-4"
+              />
+              <span className="text-sm text-stone-300">TLS/SSL (statt STARTTLS)</span>
+            </label>
+          </div>
+
+          <label className="mt-3 flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="calendarPushEnabled"
+              defaultChecked={account?.calendarPushEnabled ?? true}
+              className="h-4 w-4"
+            />
+            <span className="text-sm text-stone-300">
+              Termine automatisch als Kalender-Einladung in dieses Postfach pushen
+            </span>
+          </label>
+        </div>
 
         {error && <p className="text-xs text-red-400">{error}</p>}
         {success && <p className="text-xs text-emerald-400">{success}</p>}

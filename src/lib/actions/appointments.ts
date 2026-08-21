@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/rbac";
 import { revalidatePath } from "next/cache";
+import { pushAppointmentDelete, pushAppointmentUpsert } from "@/lib/calendarPush";
 
 export type AppointmentInput = {
   title: string;
@@ -32,6 +33,8 @@ export async function createAppointment(input: AppointmentInput) {
       },
     },
   });
+
+  await pushAppointmentUpsert(appointment.id);
 
   revalidatePath("/calendar");
   revalidatePath("/dashboard");
@@ -73,6 +76,8 @@ export async function updateAppointment(
     },
   });
 
+  await pushAppointmentUpsert(appointment.id);
+
   revalidatePath("/calendar");
   revalidatePath("/dashboard");
   revalidatePath("/team");
@@ -90,6 +95,7 @@ export async function rescheduleAppointment(
     where: { id },
     data: { startTime: new Date(startTime), endTime: new Date(endTime) },
   });
+  await pushAppointmentUpsert(id);
 
   revalidatePath("/calendar");
   revalidatePath("/dashboard");
@@ -97,6 +103,7 @@ export async function rescheduleAppointment(
 
 export async function deleteAppointment(id: string) {
   await requireSession();
+  await pushAppointmentDelete(id); // needs the row's data -- must run before delete
   await prisma.appointment.delete({ where: { id } });
   revalidatePath("/calendar");
   revalidatePath("/dashboard");
